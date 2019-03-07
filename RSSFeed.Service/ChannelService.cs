@@ -1,0 +1,59 @@
+﻿using AutoMapper;
+using RSSFeed.Data.Entities;
+using RSSFeed.Data.Interfaces;
+using RSSFeed.Service.Enums;
+using RSSFeed.Service.Interfaces;
+using RSSFeed.Service.Models;
+using RSSFeed.Service.Query;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace RSSFeed.Service
+{
+    public class ChannelService : BaseQueryService<Channel, ChannelModel, PostSortType>, IChannelService
+    {
+        public ChannelService(IUnitOfWork uow, IMapper mapper)
+            : base(uow, mapper)
+        {
+        }
+
+        public void AddChannel(ChannelModel channelModel)
+        {
+            var channel = _uow.GetRepository<Channel>().All()
+                        .FirstOrDefault(x => x.Title == channelModel.Title && x.Url == channelModel.Url);
+
+            if (channel != null)
+                return;
+
+            channel = _mapper.Map<Channel>(channelModel);
+
+            _uow.GetRepository<Channel>().Insert(channel);
+
+            _uow.SaveChanges();
+        }
+
+        public override Task<QueryResponse<ChannelModel>> GetAsync(QueryRequest<PostSortType> query)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IEnumerable<ChannelModel> GetChannels()
+        {
+            var channels = _uow.GetRepository<Channel>().All();
+            return _mapper.Map<IEnumerable<ChannelModel>>(channels.OrderBy(title => title.Title));
+        }
+
+        protected override IQueryable<Channel> Order(IQueryable<Channel> items, bool isFirst, QueryOrder<PostSortType> order)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override IQueryable<Channel> Search(IQueryable<Channel> items, QuerySearch search)
+        {
+            throw new NotImplementedException();
+        }
+    }
+}

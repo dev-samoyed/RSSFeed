@@ -1,0 +1,93 @@
+﻿@using RSSFeed.Web.Models
+@model PostViewModel
+@{
+    ViewData["Title"] = "Home Page";
+    int i = 0;
+}
+
+
+<h2>Новостная лента</h2>
+
+<select id="source" class="form-control" asp-items="ViewBag.Sources">
+    <option>Все</option>
+</select>
+<hr />
+<div class="col-md-12">
+    <input type="radio" id="date"
+           name="source" value="date" checked>
+    <label for="source">Сортировать по дате</label>
+
+    <input type="radio" id="source"
+           name="source" value="source">
+    <label for="source">Сортировать по источнику</label>
+    <br />
+    <input type="submit" value="Посмотреть" class="btn btn-primary" />
+</div>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                Источник
+            </th>
+            <th>
+                Название новости
+            </th>
+            <th>
+                Описание новости
+            </th>
+            <th>
+                Дата публикации
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var post in Model.Posts)
+        {
+            string id = "postId" + i++;
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => post.Channel.Title)
+                </td>
+                <td>
+                    <a onclick="PostSeen(@id)" id="isPostSeen" href="@post.PostUrl" target="_blank">@Html.DisplayFor(modelItem => post.Title)</a>
+                    <input id="@id" type="hidden" value="@post.Id" />
+                </td>
+                <td>
+                    @if (post.Body == null)
+                    {
+                        <span>Без описания</span>
+                    }
+                    else
+                    {
+                        @Html.DisplayFor(modelItem => post.Body)
+                    }
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => post.CreatedAt)
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+<page-link page-model="Model.PageViewModel" page-action="Index"></page-link>
+<script>
+    function PostSeen(postId) {
+        var id = $(postId).val();
+        $.ajax({
+            url: "/Home/PostSeen/",
+            type: "POST",
+            data: {
+                "postId": id
+            },
+            cache: false,
+            success: function (result) {
+                console.log('success');
+                return;
+            },
+            error: function (XMLHttpRequest) {
+                console.log('failure');
+                return;
+            }
+        });
+    }
+</script>

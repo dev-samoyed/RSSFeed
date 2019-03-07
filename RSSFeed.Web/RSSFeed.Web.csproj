@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="2.1.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\RSSFeed.Common\RSSFeed.Common.csproj" />
+    <ProjectReference Include="..\RSSFeed.Data\RSSFeed.Data.csproj" />
+    <ProjectReference Include="..\RSSFeed.Service\RSSFeed.Service.csproj" />
+  </ItemGroup>
+
+</Project>
