@@ -12,5 +12,6 @@ namespace RSSFeed.Data.Entities
         public Guid? ChannelId { get; set; }
         public virtual Channel Channel { get; set; }
         public bool IsSeen { get; set; }
+        public bool IsNew { get; set; } = true;
     }
 }

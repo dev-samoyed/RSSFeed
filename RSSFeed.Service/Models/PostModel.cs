@@ -12,5 +12,6 @@ namespace RSSFeed.Service.Models
         public Guid? ChannelId { get; set; }
         public ChannelModel Channel { get; set; }
         public bool IsSeen { get; set; }
+        public bool IsNew { get; set; }
     }
 }

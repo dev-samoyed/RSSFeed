@@ -24,31 +24,5 @@ namespace RSSFeed.Web.Controllers.Base
             _channelService = channelService;
             _mapper = mapper;
         }
-
-
-        protected async Task<QueryResponse<PostModel>> GetPosts(int pageSize, int pageNumber, string query = null)
-        {
-            return await _postService.GetAsync(new QueryRequest<PostSortType>
-            {
-                Start = (pageSize * (pageNumber - 1)),
-                Length = pageSize,
-                Includes = new[]
-                {
-                    "Channel"
-                },
-                OrderQueries = new[]
-                {
-                    new QueryOrder<PostSortType>
-                    {
-                        Direction = SortDirectionType.Descending,
-                        OrderType = PostSortType.PublishDate
-                    }
-                },
-                Search = new QuerySearch
-                {
-                    Value = query
-                }
-            });
-        }
     }
 }

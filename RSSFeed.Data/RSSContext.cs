@@ -16,20 +16,6 @@ namespace RSSFeed.Data
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
-            builder.Entity<Channel>().HasData(
-                new Channel
-                {
-                    Id = Guid.NewGuid(),
-                    Title = "Interfax",
-                    Url = "http://www.interfax.by/news/feed"
-                },
-                new Channel
-                {
-                    Id = Guid.NewGuid(),
-                    Title = "Habr",
-                    Url = "http://habrahabr.ru/rss/"
-                }
-            );
         }
     }
 }

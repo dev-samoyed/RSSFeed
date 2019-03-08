@@ -40,6 +40,12 @@ namespace RSSFeed.Service
             throw new NotImplementedException();
         }
 
+        public ChannelModel GetById(Guid id)
+        {
+            var channel = _uow.GetRepository<Channel>().GetById(id);
+            return _mapper.Map<ChannelModel>(channel);
+        }
+
         public IEnumerable<ChannelModel> GetChannels()
         {
             var channels = _uow.GetRepository<Channel>().All();
