@@ -10,6 +10,7 @@ namespace RSSFeed.Service.Interfaces
 {
     public interface IPostService : IBaseQueryService<Post, PostModel, PostSortType>
     {
+        Task<IEnumerable<PostModel>> GetPosts(Guid channelId);
         IEnumerable<PostModel> GetPosts();
         Task<PostModel> GetPostByIdAsync(Guid id);
         void AddPost(PostModel postModel);

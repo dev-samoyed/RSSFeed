@@ -11,5 +11,6 @@ namespace RSSFeed.Web.Models
     {
         public IEnumerable<PostModel> Posts { get; set; }
         public PageViewModel PageViewModel { get; set; }
+        public FilterViewModel FilterViewModel { get; set; }
     }
 }

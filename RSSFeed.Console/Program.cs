@@ -13,6 +13,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace RSSFeed.Console
 {
@@ -59,8 +60,11 @@ namespace RSSFeed.Console
                 }
             }
 
-            System.Console.WriteLine("All posts merged");
-
+            var posts = postService.GetPosts();
+            System.Console.WriteLine($"{posts.Where(x => x.IsNew).Count()} новых новостей");
+            System.Console.WriteLine($"{posts.Where(x => x.IsSeen).Count()} просмотренных новостей");
+            System.Console.WriteLine($"{posts.Count()} всего новостей");
+            System.Console.ReadLine();
         }
     }
 }

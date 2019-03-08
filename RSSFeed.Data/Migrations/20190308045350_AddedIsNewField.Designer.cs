@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using RSSFeed.Data;
 
 namespace RSSFeed.Data.Migrations
 {
     [DbContext(typeof(RSSContext))]
-    partial class RSSContextModelSnapshot : ModelSnapshot
+    [Migration("20190308045350_AddedIsNewField")]
+    partial class AddedIsNewField
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

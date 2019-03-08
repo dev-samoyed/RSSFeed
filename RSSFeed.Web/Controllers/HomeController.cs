@@ -19,24 +19,44 @@ namespace RSSFeed.Web.Controllers
         public HomeController(IPostService postService, IChannelService channelService, IMapper mapper) 
             : base(postService, channelService, mapper) { }
 
-        public async Task<IActionResult> Index(int pageNumber = 1)
+        public IActionResult Index(string source, string sortType, int pageNumber = 1)
         {
             int pageSize = 10;
-            var channels = _channelService.GetChannels();
 
-            GetFreshPosts(channels);
-
-            var posts = await GetPosts(pageSize, pageNumber);
-            PageViewModel pageViewModel = new PageViewModel(posts.RecordsTotal, pageNumber, pageSize);
-            PostViewModel postViewModel = new PostViewModel
+            var posts = _postService.GetPosts();
+            ViewData["Sources"] = new SelectList(_channelService.GetChannels(), "Id", "Title");
+            if (source != null && source != "Все")
             {
-                PageViewModel = pageViewModel,
-                Posts = posts.Data
-            };
-            ViewData["Sources"] = new SelectList(channels, "Id", "Title");
-            return View(postViewModel);
-        }
+                var id = Guid.NewGuid();
+                if (Guid.TryParse(source, out id))
+                {
+                    posts = posts.Where(p => p.ChannelId == Guid.Parse(source));
+                    ViewData["Sources"] = new SelectList(_channelService.GetChannels(), "Id", "Title", Guid.Parse(source));
+                }
+                else
+                    ViewData["Sources"] = new SelectList(_channelService.GetChannels(), "Id", "Title");
+            }
+            if (!String.IsNullOrEmpty(sortType))
+            {
+                posts = sortType == "date" ? posts.OrderByDescending(p => p.CreatedAt)
+                                           : posts.OrderByDescending(p => p.Channel.Title);
+            }
 
+            var count = posts.Count();
+            var items = posts.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToList();
+
+            PostViewModel viewModel = new PostViewModel
+            {
+                PageViewModel = new PageViewModel(count, pageNumber, pageSize),
+                FilterViewModel = new FilterViewModel(source, sortType),
+                Posts = items
+            };
+
+            
+            ViewBag.SortType = sortType;
+            return View(viewModel);
+        }
+        
         public JsonResult PostSeen(string postId)
         {
             var id = Guid.Parse(postId);

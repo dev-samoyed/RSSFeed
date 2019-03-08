@@ -1,5 +1,4 @@
-﻿@using RSSFeed.Web.Models
-@model PostViewModel
+﻿@model RSSFeed.Web.Models.PostViewModel
 @{
     ViewData["Title"] = "Home Page";
     int i = 0;
@@ -8,21 +7,37 @@
 
 <h2>Новостная лента</h2>
 
-<select id="source" class="form-control" asp-items="ViewBag.Sources">
-    <option>Все</option>
-</select>
-<hr />
-<div class="col-md-12">
-    <input type="radio" id="date"
-           name="source" value="date" checked>
-    <label for="source">Сортировать по дате</label>
 
-    <input type="radio" id="source"
-           name="source" value="source">
-    <label for="source">Сортировать по источнику</label>
-    <br />
-    <input type="submit" value="Посмотреть" class="btn btn-primary" />
-</div>
+<form asp-action="Index" method="get">
+    <div class="col-md-12">
+        <select id="source" name="source" class="form-control" asp-items="ViewBag.Sources">
+            <option>Все</option>
+        </select>
+        <hr />
+        @if (ViewBag.SortType == "source")
+        {
+            <input type="radio" id="dateSort"
+                   name="sortType" value="date">
+            <label for="sortType">Сортировать по дате</label>
+
+            <input type="radio" id="sourceSort"
+                   name="sortType" value="source" checked>
+            <label for="sortType">Сортировать по источнику</label>
+        }
+        else
+        {
+            <input type="radio" id="dateSort"
+                   name="source" value="date" checked>
+            <label for="source">Сортировать по дате</label>
+
+            <input type="radio" id="sourceSort"
+                   name="source" value="source">
+            <label for="source">Сортировать по источнику</label>
+        }
+        <br />
+        <input id="getData" type="submit" value="Просмотреть" class="btn btn-default" />
+    </div>
+</form>
 <table class="table">
     <thead>
         <tr>
@@ -69,25 +84,11 @@
         }
     </tbody>
 </table>
-<page-link page-model="Model.PageViewModel" page-action="Index"></page-link>
-<script>
-    function PostSeen(postId) {
-        var id = $(postId).val();
-        $.ajax({
-            url: "/Home/PostSeen/",
-            type: "POST",
-            data: {
-                "postId": id
-            },
-            cache: false,
-            success: function (result) {
-                console.log('success');
-                return;
-            },
-            error: function (XMLHttpRequest) {
-                console.log('failure');
-                return;
-            }
-        });
-    }
-</script>
+<input type="hidden" value="@Model.PageViewModel.PageNumber" id="pageNumber" />
+
+<page-link page-model="Model.PageViewModel" page-action="Index"
+           page-url-source="@(Model.FilterViewModel.SelectedSource)"
+           page-url-sortType="@(Model.FilterViewModel.SelectedSortType)"></page-link>
+
+
+<script src="~/js/site.js"></script>

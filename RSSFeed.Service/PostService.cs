@@ -28,7 +28,12 @@ namespace RSSFeed.Service
                         .FirstOrDefault(x => x.Title == postModel.Title && x.CreatedAt == postModel.CreatedAt);
 
             if (post != null)
+            {
+                post.IsNew = false;
+                _uow.GetRepository<Post>().Update(post);
+                _uow.SaveChanges();
                 return;
+            }
 
             post = _mapper.Map<Post>(postModel);
             _uow.GetRepository<Post>().Insert(post);
@@ -45,10 +50,11 @@ namespace RSSFeed.Service
             return _mapper.Map<PostModel>(post);
         }
 
-        public IEnumerable<PostModel> GetPosts()
+        public async Task<IEnumerable<PostModel>> GetPosts(Guid channelId)
         {
-            var posts = _uow.GetRepository<Post>().All();
-            return _mapper.Map<IEnumerable<PostModel>>(posts.OrderBy(title => title.Title));
+            var posts = _uow.GetRepository<Post>().All().Include(x => x.Channel)
+                                        .Where(x => x.ChannelId == channelId);
+            return _mapper.Map<IEnumerable<PostModel>>(posts.OrderByDescending(post => post.CreatedAt));
         }
 
         public IList<PostModel> FeedItems(ChannelModel channel)
@@ -95,8 +101,12 @@ namespace RSSFeed.Service
 
         protected override IQueryable<Post> Search(IQueryable<Post> items, QuerySearch search)
         {
+            var id = Guid.NewGuid();
             if (!string.IsNullOrEmpty(search?.Value))
-                return items.Where(x => x.Title.ToLower().Contains(search.Value.ToLower())).OrderBy(post => post.Title);
+            {
+                if (Guid.TryParse(search.Value, out id))
+                    return items.Where(x => x.ChannelId.Value == Guid.Parse(search.Value));
+            }
             return items;
         }
 
@@ -109,6 +119,12 @@ namespace RSSFeed.Service
             post.IsSeen = true;
             _uow.GetRepository<Post>().Update(post);
             _uow.SaveChanges();
+        }
+
+        public IEnumerable<PostModel> GetPosts()
+        {
+            var posts = _uow.GetRepository<Post>().All().Include(x => x.Channel);
+            return _mapper.Map<IEnumerable<PostModel>>(posts.OrderByDescending(post => post.CreatedAt));
         }
     }
 }
