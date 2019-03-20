@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using RSSFeed.Data;
 
 namespace RSSFeed.Data.Migrations
 {
     [DbContext(typeof(RSSContext))]
-    partial class RSSContextModelSnapshot : ModelSnapshot
+    [Migration("20190320160114_UpdatePosts")]
+    partial class UpdatePosts
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -24,8 +26,6 @@ namespace RSSFeed.Data.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<Guid?>("ChannelId");
-
                     b.Property<string>("Name");
 
                     b.Property<Guid?>("PostId");
@@ -34,7 +34,7 @@ namespace RSSFeed.Data.Migrations
 
                     b.HasIndex("PostId");
 
-                    b.ToTable("Categories");
+                    b.ToTable("Category");
                 });
 
             modelBuilder.Entity("RSSFeed.Data.Entities.Channel", b =>

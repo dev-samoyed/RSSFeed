@@ -8,6 +8,7 @@ namespace RSSFeed.Data
     {
         public DbSet<Channel> Channels { get; set; }
         public DbSet<Post> Posts { get; set; }
+        public DbSet<Category> Categories { get; set; }
 
         public RSSContext(DbContextOptions<RSSContext> options)
            : base(options)

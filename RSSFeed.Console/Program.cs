@@ -37,13 +37,23 @@ namespace RSSFeed.Console
             {
                 new ChannelModel
                 {
-                    Title = "Interfax",
-                    Url = "http://www.interfax.by/news/feed"
+                    Title = "Habr",
+                    Url = "http://habrahabr.ru/rss/"
                 },
                 new ChannelModel
                 {
-                    Title = "Habr",
-                    Url = "http://habrahabr.ru/rss/"
+                    Title = "24kg",
+                    Url = "https://24.kg/rss/"
+                },
+                new ChannelModel
+                {
+                    Title = "Sputnik Бишкек",
+                    Url = "https://sputnik.kg/export/rss2/archive/index.xml"
+                },
+                new ChannelModel
+                {
+                    Title = "Kaktus Media",
+                    Url = "https://kaktus.media/?rss"
                 }
             };
 

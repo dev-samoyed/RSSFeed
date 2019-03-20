@@ -24,6 +24,7 @@ namespace RSSFeed.Web.Controllers
             int pageSize = 10;
 
             var posts = _postService.GetPosts();
+            GetFreshPosts(_channelService.GetChannels());
             ViewData["Sources"] = new SelectList(_channelService.GetChannels(), "Id", "Title");
             if (source != null && source != "Все")
             {

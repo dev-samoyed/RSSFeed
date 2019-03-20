@@ -11,6 +11,7 @@ using RSSFeed.Service.Query;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace RSSFeed.Service
@@ -34,13 +35,31 @@ namespace RSSFeed.Service
                 _uow.SaveChanges();
                 return;
             }
-
-            post = _mapper.Map<Post>(postModel);
-            _uow.GetRepository<Post>().Insert(post);
             
+            post = _mapper.Map<Post>(postModel);
+            post.Title = Regex.Replace(post.Title, @"<[^>]*(>|$)|&nbsp;|&zwnj;|&raquo;|&laquo;", " ").Trim();
+            post.Body = Regex.Replace(post.Body, @"<[^>]*(>|$)|&nbsp;|&zwnj;|&raquo;|&laquo;", " ").Trim();
+
+            _uow.GetRepository<Post>().Insert(post);
+
+            foreach (var category in post.Categories)
+            {
+                category.ChannelId = post.ChannelId;
+                SaveCategory(category);
+            }
+
             _uow.SaveChanges();
         }
         
+        protected void SaveCategory(Category category)
+        {
+            var existingCategory = _uow.GetRepository<Category>().All()
+                                .Where(x => x.Name == category.Name && x.ChannelId == category.ChannelId).ToList();
+            if (existingCategory.Count > 0)
+                return;
+
+            _uow.GetRepository<Category>().Insert(category);
+        }
         public async Task<PostModel> GetPostByIdAsync(Guid id)
         {
             var post = await _uow.GetRepository<Post>().All()
@@ -72,15 +91,37 @@ namespace RSSFeed.Service
                     Title = item.Title,
                     CreatedAt = item.PublishingDate.Value,
                     IsSeen = false,
+                    IsNew = true,
                     PostUrl = item.Link,
-                    Body = item.Content
+                    Body = item.Description
                 };
+
+                var categories = GetCategories(item, channelItem);
+
+                channelItem.Categories = categories;
+                
                 postModels.Add(channelItem);
             }
 
             return postModels;
         }
 
+        protected IList<CategoryModel> GetCategories(FeedItem item, PostModel post)
+        {
+            var categories = new List<CategoryModel>();
+
+            foreach (var category in item.Categories)
+            {
+                categories.Add(new CategoryModel
+                {
+                    Id = Guid.NewGuid(),
+                    Name = category,
+                    Post = post
+                });
+            }
+
+            return categories;
+        }
         protected override IQueryable<Post> Order(IQueryable<Post> items, bool isFirst, QueryOrder<PostSortType> order)
         {
             switch (order.OrderType)
