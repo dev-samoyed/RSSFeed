@@ -44,6 +44,8 @@ namespace RSSFeed.Data.Migrations
 
                     b.Property<int>("ChannelType");
 
+                    b.Property<string>("Image");
+
                     b.Property<string>("Title");
 
                     b.Property<string>("Url");

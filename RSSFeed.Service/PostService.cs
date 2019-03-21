@@ -37,8 +37,8 @@ namespace RSSFeed.Service
             }
             
             post = _mapper.Map<Post>(postModel);
-            post.Title = Regex.Replace(post.Title, @"<[^>]*(>|$)|&nbsp;|&zwnj;|&raquo;|&laquo;", " ").Trim();
-            post.Body = Regex.Replace(post.Body, @"<[^>]*(>|$)|&nbsp;|&zwnj;|&raquo;|&laquo;", " ").Trim();
+            post.Title = Regex.Replace(post.Title, @"<[^>]*(>|$)|&nbsp;|&zwnj;|&raquo;|&laquo;|&mdash;", " ").Trim();
+            post.Body = Regex.Replace(post.Body, @"<[^>]*(>|$)|&nbsp;|&zwnj;|&raquo;|&laquo;|&mdash;", " ").Trim();
 
             _uow.GetRepository<Post>().Insert(post);
 
@@ -82,8 +82,11 @@ namespace RSSFeed.Service
             var readerTask = FeedReader.ReadAsync(channel.Url);
             readerTask.ConfigureAwait(false);
 
+            
             foreach (var item in readerTask.Result.Items)
             {
+                var image = item.SpecificItem.Element.Descendants().ToList();
+
                 var channelItem = new PostModel
                 {
                     Channel = channel,
@@ -93,7 +96,12 @@ namespace RSSFeed.Service
                     IsSeen = false,
                     IsNew = true,
                     PostUrl = item.Link,
-                    Body = item.Description
+                    Body = item.Description,
+                    ImageUrl = image.FirstOrDefault(x => x.Name.LocalName.Contains("enclosure")) != null 
+                                ? item.SpecificItem.Element.Descendants().First(x => x.Name.LocalName == "enclosure").Attribute("url").Value
+                                : channel.Image
+
+
                 };
 
                 var categories = GetCategories(item, channelItem);
@@ -142,11 +150,9 @@ namespace RSSFeed.Service
 
         protected override IQueryable<Post> Search(IQueryable<Post> items, QuerySearch search)
         {
-            var id = Guid.NewGuid();
             if (!string.IsNullOrEmpty(search?.Value))
             {
-                if (Guid.TryParse(search.Value, out id))
-                    return items.Where(x => x.ChannelId.Value == Guid.Parse(search.Value));
+                    return items.Where(x => x.Title.Contains(search.Value));
             }
             return items;
         }

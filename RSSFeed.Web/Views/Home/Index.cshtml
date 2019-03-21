@@ -1,94 +1,18 @@
-﻿@model RSSFeed.Web.Models.PostViewModel
-@{
-    ViewData["Title"] = "Home Page";
-    int i = 0;
-}
-
-
-<h2>Новостная лента</h2>
-
-
-<form asp-action="Index" method="get">
-    <div class="col-md-12">
-        <select id="source" name="source" class="form-control" asp-items="ViewBag.Sources">
-            <option>Все</option>
-        </select>
-        <hr />
-        @if (ViewBag.SortType == "source")
-        {
-            <input type="radio" id="dateSort"
-                   name="sortType" value="date">
-            <label for="sortType">Сортировать по дате</label>
-
-            <input type="radio" id="sourceSort"
-                   name="sortType" value="source" checked>
-            <label for="sortType">Сортировать по источнику</label>
-        }
-        else
-        {
-            <input type="radio" id="dateSort"
-                   name="source" value="date" checked>
-            <label for="source">Сортировать по дате</label>
-
-            <input type="radio" id="sourceSort"
-                   name="source" value="source">
-            <label for="source">Сортировать по источнику</label>
-        }
-        <br />
-        <input id="getData" type="submit" value="Просмотреть" class="btn btn-default" />
+﻿<div class="row d-flex justify-content-center" v-if="seen">
+    <input id="pageNumber" type="hidden" name="name" v-bind:value="page" />
+    <div class="card" v-for="post in items">
+        <a :href="post.postUrl" id="getVideo" target="_blank" v-on:click="postSeen(post.id)">
+            <input type="hidden" id="postId" v-model="post.id" />
+            <img class="card-img-top image img-fluid img-thumbnail" :src="post.imageUrl">
+            <div class="card-body">
+                <h5 class="card-title">{{ post.title }}</h5>
+                <p class="card-description">{{ post.body }}</p>
+            </div>
+        </a>
     </div>
-</form>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                Источник
-            </th>
-            <th>
-                Название новости
-            </th>
-            <th>
-                Описание новости
-            </th>
-            <th>
-                Дата публикации
-            </th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var post in Model.Posts)
-        {
-            string id = "postId" + i++;
-            <tr>
-                <td>
-                    @Html.DisplayFor(modelItem => post.Channel.Title)
-                </td>
-                <td>
-                    <a onclick="PostSeen(@id)" id="isPostSeen" href="@post.PostUrl" target="_blank">@Html.DisplayFor(modelItem => post.Title)</a>
-                    <input id="@id" type="hidden" value="@post.Id" />
-                </td>
-                <td>
-                    @if (post.Body == null)
-                    {
-                        <span>Без описания</span>
-                    }
-                    else
-                    {
-                        @Html.DisplayFor(modelItem => post.Body)
-                    }
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => post.CreatedAt)
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
-<input type="hidden" value="@Model.PageViewModel.PageNumber" id="pageNumber" />
-
-<page-link page-model="Model.PageViewModel" page-action="Index"
-           page-url-source="@(Model.FilterViewModel.SelectedSource)"
-           page-url-sortType="@(Model.FilterViewModel.SelectedSortType)"></page-link>
-
-
-<script src="~/js/site.js"></script>
+</div>
+<div class="row d-flex justify-content-center" id="notFoundOrNoContent" v-if="notFound">
+    <div class="content-fluid text-center vertical-align-div">
+        <span class="vertical-align-span">Post not found</span>
+    </div>
+</div>
