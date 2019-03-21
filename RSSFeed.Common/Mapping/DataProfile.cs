@@ -13,6 +13,7 @@ namespace RSSFeed.Common.Mapping
         {
             CreateMap<Post, PostModel>(MemberList.None).ReverseMap();
             CreateMap<Channel, ChannelModel>(MemberList.None).ReverseMap();
+            CreateMap<Category, CategoryModel>(MemberList.None).ReverseMap();
         }
     }
 }

@@ -15,14 +15,36 @@ namespace RSSFeed.Data.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "2.1.1-rtm-30846")
+                .HasAnnotation("ProductVersion", "2.1.8-servicing-32085")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+            modelBuilder.Entity("RSSFeed.Data.Entities.Category", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<Guid?>("ChannelId");
+
+                    b.Property<string>("Name");
+
+                    b.Property<Guid?>("PostId");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PostId");
+
+                    b.ToTable("Categories");
+                });
 
             modelBuilder.Entity("RSSFeed.Data.Entities.Channel", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd();
+
+                    b.Property<int>("ChannelType");
+
+                    b.Property<string>("Image");
 
                     b.Property<string>("Title");
 
@@ -31,11 +53,6 @@ namespace RSSFeed.Data.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Channels");
-
-                    b.HasData(
-                        new { Id = new Guid("050e2ffd-2e2c-4dce-a649-7986b0c12903"), Title = "Interfax", Url = "http://www.interfax.by/news/feed" },
-                        new { Id = new Guid("136544ad-fb83-4259-b365-c4428a00cab6"), Title = "Habr", Url = "http://habrahabr.ru/rss/" }
-                    );
                 });
 
             modelBuilder.Entity("RSSFeed.Data.Entities.Post", b =>
@@ -48,6 +65,8 @@ namespace RSSFeed.Data.Migrations
                     b.Property<Guid?>("ChannelId");
 
                     b.Property<DateTime>("CreatedAt");
+
+                    b.Property<string>("ImageUrl");
 
                     b.Property<bool>("IsNew");
 
@@ -62,6 +81,13 @@ namespace RSSFeed.Data.Migrations
                     b.HasIndex("ChannelId");
 
                     b.ToTable("Posts");
+                });
+
+            modelBuilder.Entity("RSSFeed.Data.Entities.Category", b =>
+                {
+                    b.HasOne("RSSFeed.Data.Entities.Post", "Post")
+                        .WithMany("Categories")
+                        .HasForeignKey("PostId");
                 });
 
             modelBuilder.Entity("RSSFeed.Data.Entities.Post", b =>

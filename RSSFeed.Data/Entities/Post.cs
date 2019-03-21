@@ -1,5 +1,6 @@
 ﻿using RSSFeed.Data.Entities.Base;
 using System;
+using System.Collections.Generic;
 
 namespace RSSFeed.Data.Entities
 {
@@ -12,6 +13,13 @@ namespace RSSFeed.Data.Entities
         public Guid? ChannelId { get; set; }
         public virtual Channel Channel { get; set; }
         public bool IsSeen { get; set; }
-        public bool IsNew { get; set; } = true;
+        public bool IsNew { get; set; }
+        public virtual ICollection<Category> Categories { get; set; }
+        public string ImageUrl { get; set; }
+
+        public Post()
+        {
+            Categories = new List<Category>();
+        }
     }
 }

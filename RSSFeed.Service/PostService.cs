@@ -11,6 +11,7 @@ using RSSFeed.Service.Query;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace RSSFeed.Service
@@ -34,13 +35,31 @@ namespace RSSFeed.Service
                 _uow.SaveChanges();
                 return;
             }
-
-            post = _mapper.Map<Post>(postModel);
-            _uow.GetRepository<Post>().Insert(post);
             
+            post = _mapper.Map<Post>(postModel);
+            post.Title = Regex.Replace(post.Title, @"<[^>]*(>|$)|&nbsp;|&zwnj;|&raquo;|&laquo;|&mdash;", " ").Trim();
+            post.Body = Regex.Replace(post.Body, @"<[^>]*(>|$)|&nbsp;|&zwnj;|&raquo;|&laquo;|&mdash;", " ").Trim();
+
+            _uow.GetRepository<Post>().Insert(post);
+
+            foreach (var category in post.Categories)
+            {
+                category.ChannelId = post.ChannelId;
+                SaveCategory(category);
+            }
+
             _uow.SaveChanges();
         }
         
+        protected void SaveCategory(Category category)
+        {
+            var existingCategory = _uow.GetRepository<Category>().All()
+                                .Where(x => x.Name == category.Name && x.ChannelId == category.ChannelId).ToList();
+            if (existingCategory.Count > 0)
+                return;
+
+            _uow.GetRepository<Category>().Insert(category);
+        }
         public async Task<PostModel> GetPostByIdAsync(Guid id)
         {
             var post = await _uow.GetRepository<Post>().All()
@@ -63,8 +82,11 @@ namespace RSSFeed.Service
             var readerTask = FeedReader.ReadAsync(channel.Url);
             readerTask.ConfigureAwait(false);
 
+            
             foreach (var item in readerTask.Result.Items)
             {
+                var image = item.SpecificItem.Element.Descendants().ToList();
+
                 var channelItem = new PostModel
                 {
                     Channel = channel,
@@ -72,15 +94,42 @@ namespace RSSFeed.Service
                     Title = item.Title,
                     CreatedAt = item.PublishingDate.Value,
                     IsSeen = false,
+                    IsNew = true,
                     PostUrl = item.Link,
-                    Body = item.Content
+                    Body = item.Description,
+                    ImageUrl = image.FirstOrDefault(x => x.Name.LocalName.Contains("enclosure")) != null 
+                                ? item.SpecificItem.Element.Descendants().First(x => x.Name.LocalName == "enclosure").Attribute("url").Value
+                                : channel.Image
+
+
                 };
+
+                var categories = GetCategories(item, channelItem);
+
+                channelItem.Categories = categories;
+                
                 postModels.Add(channelItem);
             }
 
             return postModels;
         }
 
+        protected IList<CategoryModel> GetCategories(FeedItem item, PostModel post)
+        {
+            var categories = new List<CategoryModel>();
+
+            foreach (var category in item.Categories)
+            {
+                categories.Add(new CategoryModel
+                {
+                    Id = Guid.NewGuid(),
+                    Name = category,
+                    Post = post
+                });
+            }
+
+            return categories;
+        }
         protected override IQueryable<Post> Order(IQueryable<Post> items, bool isFirst, QueryOrder<PostSortType> order)
         {
             switch (order.OrderType)
@@ -101,11 +150,9 @@ namespace RSSFeed.Service
 
         protected override IQueryable<Post> Search(IQueryable<Post> items, QuerySearch search)
         {
-            var id = Guid.NewGuid();
             if (!string.IsNullOrEmpty(search?.Value))
             {
-                if (Guid.TryParse(search.Value, out id))
-                    return items.Where(x => x.ChannelId.Value == Guid.Parse(search.Value));
+                    return items.Where(x => x.Title.Contains(search.Value));
             }
             return items;
         }

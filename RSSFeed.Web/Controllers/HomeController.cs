@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using AutoMapper;
+using Hangfire;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using RSSFeed.Service.Interfaces;
@@ -19,42 +21,22 @@ namespace RSSFeed.Web.Controllers
         public HomeController(IPostService postService, IChannelService channelService, IMapper mapper) 
             : base(postService, channelService, mapper) { }
 
-        public IActionResult Index(string source, string sortType, int pageNumber = 1)
+        public IActionResult Index(string query)
         {
-            int pageSize = 10;
+            ViewBag.SearchQuery = (query ?? "");
+            RecurringJob.AddOrUpdate(
+                    () => RunInBackground(),
+                    Cron.MinuteInterval(1));
+            return View();
+        }
 
-            var posts = _postService.GetPosts();
-            ViewData["Sources"] = new SelectList(_channelService.GetChannels(), "Id", "Title");
-            if (source != null && source != "Все")
-            {
-                var id = Guid.NewGuid();
-                if (Guid.TryParse(source, out id))
-                {
-                    posts = posts.Where(p => p.ChannelId == Guid.Parse(source));
-                    ViewData["Sources"] = new SelectList(_channelService.GetChannels(), "Id", "Title", Guid.Parse(source));
-                }
-                else
-                    ViewData["Sources"] = new SelectList(_channelService.GetChannels(), "Id", "Title");
-            }
-            if (!String.IsNullOrEmpty(sortType))
-            {
-                posts = sortType == "date" ? posts.OrderByDescending(p => p.CreatedAt)
-                                           : posts.OrderByDescending(p => p.Channel.Title);
-            }
+        // method to getting data to scrolling page
+        public async Task<JsonResult> GetData(int pageNumber, string query)
+        {
+            var pageSize = 40;
+            var postModels = await GetPosts(pageSize, pageNumber, query);
 
-            var count = posts.Count();
-            var items = posts.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToList();
-
-            PostViewModel viewModel = new PostViewModel
-            {
-                PageViewModel = new PageViewModel(count, pageNumber, pageSize),
-                FilterViewModel = new FilterViewModel(source, sortType),
-                Posts = items
-            };
-
-            
-            ViewBag.SortType = sortType;
-            return View(viewModel);
+            return Json(new { postModels.Data, total = postModels.RecordsTotal, filtered = postModels.RecordsFiltered });
         }
         
         public JsonResult PostSeen(string postId)
@@ -62,6 +44,55 @@ namespace RSSFeed.Web.Controllers
             var id = Guid.Parse(postId);
             _postService.PostSeen(id);
             return Json(new { data = "success" });
+        }
+
+        public void RunInBackground()
+        {
+            // add channels, if not exist
+            var channels = new List<ChannelModel>
+            {
+                new ChannelModel
+                {
+                    Title = "Habr",
+                    Url = "http://habrahabr.ru/rss/",
+                    Image = "https://habr.com/images/habr.png"
+                },
+                new ChannelModel
+                {
+                    Title = "24kg",
+                    Url = "https://24.kg/rss/",
+                    Image = "https://24.kg/assets/42adfee/images/logo.png"
+                },
+                new ChannelModel
+                {
+                    Title = "Sputnik Бишкек",
+                    Url = "https://sputnik.kg/export/rss2/archive/index.xml",
+                    Image = "https://ru.sputnik.kg/i/logo.png"
+                },
+                new ChannelModel
+                {
+                    Title = "Kaktus Media",
+                    Url = "https://kaktus.media/?rss",
+                    Image = "https://kaktus.media/lenta4/static/img/logo.png?2"
+                }
+            };
+
+            foreach (var channel in channels)
+            {
+                _channelService.AddChannel(channel);
+            }
+
+            var channelModels = _channelService.GetChannels();
+            foreach (var channel in channelModels)
+            {
+                var feedItems = _postService.FeedItems(channel);
+                foreach (var channelItem in feedItems)
+                {
+                    channelItem.Title = Regex.Replace(channelItem.Title, @"<[^>]*(>|$)|&nbsp;|&zwnj;|&raquo;|&laquo;|&mdash;", " ").Trim();
+                    channelItem.Body = Regex.Replace(channelItem.Body, @"<[^>]*(>|$)|&nbsp;|&zwnj;|&raquo;|&laquo;|&mdash;", " ").Trim();
+                    _postService.AddPost(channelItem);
+                }
+            }
         }
 
         public IActionResult About()

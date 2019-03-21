@@ -2,7 +2,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.IdentityModel.Protocols;
 using RSSFeed.Common;
 using RSSFeed.Data;
 using RSSFeed.Data.Interfaces;
@@ -37,13 +36,27 @@ namespace RSSFeed.Console
             {
                 new ChannelModel
                 {
-                    Title = "Interfax",
-                    Url = "http://www.interfax.by/news/feed"
+                    Title = "Habr",
+                    Url = "http://habrahabr.ru/rss/",
+                    Image = "https://habr.com/images/habr.png"
                 },
                 new ChannelModel
                 {
-                    Title = "Habr",
-                    Url = "http://habrahabr.ru/rss/"
+                    Title = "24kg",
+                    Url = "https://24.kg/rss/",
+                    Image = "https://24.kg/assets/42adfee/images/logo.png"
+                },
+                new ChannelModel
+                {
+                    Title = "Sputnik Бишкек",
+                    Url = "https://sputnik.kg/export/rss2/archive/index.xml",
+                    Image = "https://ru.sputnik.kg/i/logo.png"
+                },
+                new ChannelModel
+                {
+                    Title = "Kaktus Media",
+                    Url = "https://kaktus.media/?rss",
+                    Image = "https://kaktus.media/lenta4/static/img/logo.png?2"
                 }
             };
 
