@@ -25,7 +25,7 @@ namespace RSSFeed.Web.Controllers.Base
             _mapper = mapper;
         }
 
-        protected async Task<QueryResponse<PostModel>> GetPosts(int pageSize, int pageNumber, int sort, string query = null)
+        protected async Task<QueryResponse<PostModel>> GetPosts(int pageSize, int pageNumber, int sort, string category, string source, string query = null)
         {
             return await _postService.GetAsync(new QueryRequest<PostSortType>
             {
@@ -33,7 +33,8 @@ namespace RSSFeed.Web.Controllers.Base
                 Length = pageSize,
                 Includes = new[]
                 {
-                    "Channel"
+                    "Channel",
+                    "Categories"
                 },
                 OrderQueries = new[]
                 {
@@ -47,6 +48,14 @@ namespace RSSFeed.Web.Controllers.Base
                 Search = new QuerySearch
                 {
                     Value = query
+                },
+                Category = new QuerySearch
+                {
+                    Value = category
+                },
+                SourceOrder = new QuerySearch
+                {
+                    Value = source
                 }
             });
         }

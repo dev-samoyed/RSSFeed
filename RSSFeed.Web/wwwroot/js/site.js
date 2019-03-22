@@ -66,10 +66,10 @@ $(document).ready(function () {
                 axios.get(`/Home/GetData/?pageNumber=${this.page}&query=${this.getQuery()}&source=${this.getSource()}&sort=${this.getSort()}&category=${this.getCategory()}`)
                     .then((response) => {
                         console.log(response);
-                        if (response.data.data.length > 0) {
+                        if (response.data.posts.length > 0) {
                             this.notFound = false;
                             this.seen = true;
-                            response.data.data.forEach(function (item) {
+                            response.data.posts.forEach(function (item) {
                                 if (item.body.length > 170) {
                                     item.body = item.body.substring(0, 170) + "...";
                                 }
@@ -104,7 +104,7 @@ $(document).ready(function () {
                             var categories = '';
                             console.log(response.data);
                             $('#categories').empty();
-                            categories += '<option>Все категории</option>';
+                            categories += '<option selected>Все категории</option>';
                             response.data.forEach(function (item) {
                                 categories += `<option value="${item.value}">${item.value}</option>`;
                             });

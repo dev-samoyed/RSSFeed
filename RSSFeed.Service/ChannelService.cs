@@ -52,12 +52,22 @@ namespace RSSFeed.Service
             return _mapper.Map<IEnumerable<ChannelModel>>(channels.OrderBy(title => title.Title));
         }
 
+        protected override IQueryable<Channel> Category(IQueryable<Channel> items, QuerySearch category)
+        {
+            throw new NotImplementedException();
+        }
+
         protected override IQueryable<Channel> Order(IQueryable<Channel> items, bool isFirst, QueryOrder<PostSortType> order)
         {
             throw new NotImplementedException();
         }
 
         protected override IQueryable<Channel> Search(IQueryable<Channel> items, QuerySearch search)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override IQueryable<Channel> SourceOrder(IQueryable<Channel> items, QuerySearch source)
         {
             throw new NotImplementedException();
         }

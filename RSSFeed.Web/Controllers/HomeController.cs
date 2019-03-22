@@ -36,29 +36,32 @@ namespace RSSFeed.Web.Controllers
         public async Task<JsonResult> GetData(int pageNumber, string query, string source, int sort, string category)
         {
             var pageSize = 40;
-            var postModels = await GetPosts(pageSize, pageNumber, sort, query);
+            var postModels = await GetPosts(pageSize, pageNumber, sort, category, source, query);
+            
             var exampleId = Guid.NewGuid();
             if (Guid.TryParse(source, out exampleId) && category != "Все категории")
             {
                 ViewBag.Sources = new SelectList(_channelService.GetChannels(), "Id", "Title", Guid.Parse(source));
-                postModels.Data = sort == 0 ? postModels.Data.OrderByDescending(x => x.CreatedAt)
-                                                    .Where(x => x.ChannelId == Guid.Parse(source) && x.Categories.Select(cat=>cat.Name.ToLower()).Contains(category.ToLower())).ToList()
-                                            : postModels.Data.OrderByDescending(x => x.Channel.Title)
-                                                    .Where(x => x.ChannelId == Guid.Parse(source) && x.Categories.Select(cat => cat.Name.ToLower()).Contains(category.ToLower())).ToList();
-            }
-            if (Guid.TryParse(source, out exampleId))
-            {
-                ViewBag.Sources = new SelectList(_channelService.GetChannels(), "Id", "Title", Guid.Parse(source));
-                
-                postModels.Data = sort == 0 ? postModels.Data.OrderByDescending(x => x.CreatedAt).Where(x => x.ChannelId == Guid.Parse(source)).ToList()
-                                            : postModels.Data.OrderByDescending(x => x.Channel.Title).Where(x => x.ChannelId == Guid.Parse(source)).ToList();
-                
             }
             else
             {
                 ViewBag.Sources = new SelectList(_channelService.GetChannels(), "Id", "Title");
             }
-            return Json(new { postModels.Data, total = postModels.RecordsTotal, filtered = postModels.RecordsFiltered });
+
+            var posts = new PostViewModel
+            {
+                Posts = postModels.Data
+            };
+
+            foreach (var post in posts.Posts)
+            {
+                foreach (var ca in post.Categories)
+                {
+                    ca.Post = null;
+                }
+            }
+
+            return Json(new { posts.Posts, total = postModels.RecordsTotal, filtered = postModels.RecordsFiltered });
         }
 
         public JsonResult GetCategoriesBySource(Guid sourceId)

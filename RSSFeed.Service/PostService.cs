@@ -58,7 +58,7 @@ namespace RSSFeed.Service
             if (existingCategory.Count >= 1)
                 return;
 
-            if (category.Name.Any(char.IsLower) && category.Name.Any(char.IsUpper) && existingCategory != null)
+            if (category.Name.Any(char.IsLower) && category.Name.Any(char.IsUpper))
                 _uow.GetRepository<Category>().Insert(category);
         }
         public async Task<PostModel> GetPostByIdAsync(Guid id)
@@ -131,6 +131,7 @@ namespace RSSFeed.Service
 
             return categories;
         }
+
         protected override IQueryable<Post> Order(IQueryable<Post> items, bool isFirst, QueryOrder<PostSortType> order)
         {
             switch (order.OrderType)
@@ -153,8 +154,34 @@ namespace RSSFeed.Service
         {
             if (!string.IsNullOrEmpty(search?.Value))
             {
-                    return items.Where(x => x.Title.Contains(search.Value));
+                return items.Where(x => x.Title.Contains(search.Value));
             }
+            return items;
+        }
+
+        protected override IQueryable<Post> Category(IQueryable<Post> items, QuerySearch category)
+        {
+            if (!string.IsNullOrEmpty(category?.Value))
+            {
+                if (category.Value != "Все категории")
+                {
+                    var posts = items.Where(x => x.Categories.Select(y => y.Name).Contains(category.Value));
+                    return posts;
+                }
+            }
+            return items;
+        }
+
+        protected override IQueryable<Post> SourceOrder(IQueryable<Post> items, QuerySearch source)
+        {
+            var exampleId = Guid.NewGuid();
+            if(Guid.TryParse(source.Value, out exampleId))
+            {
+                var posts = items.Where(x => x.ChannelId == Guid.Parse(source.Value));
+                return posts;
+            }
+                
+
             return items;
         }
 

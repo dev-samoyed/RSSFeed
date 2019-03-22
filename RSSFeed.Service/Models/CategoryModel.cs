@@ -1,4 +1,5 @@
-﻿using RSSFeed.Service.Models.Base;
+﻿using Newtonsoft.Json;
+using RSSFeed.Service.Models.Base;
 using System;
 using System.Collections.Generic;
 using System.Text;
