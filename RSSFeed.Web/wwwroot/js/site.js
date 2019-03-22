@@ -15,6 +15,9 @@ $(document).ready(function () {
             page: 1,
             bottom: false,
             displayBlock: '',
+            source_selected: 'Все источники',
+            sort_selected: 0,
+            category_selected: 'Все категории',
             items: []
         },
         methods: {
@@ -37,6 +40,15 @@ $(document).ready(function () {
             getQuery: function () {
                 return document.querySelector("input[name=query]").value;
             },
+            getSource: function () {
+                return document.getElementById("sources").value;
+            },
+            getSort: function () {
+                return document.getElementById("sort").value;
+            },
+            getCategory: function () {
+                return document.getElementById("categories").value;
+            },
             isLoading(state) {
                 return this.loader = state;
             },
@@ -51,7 +63,7 @@ $(document).ready(function () {
                 // without _this variable push method don't work
                 var _this = this;
                 this.isLoading(true);
-                axios.get(`/Home/GetData/?pageNumber=${this.page}&query=${this.getQuery()}`)
+                axios.get(`/Home/GetData/?pageNumber=${this.page}&query=${this.getQuery()}&source=${this.getSource()}&sort=${this.getSort()}&category=${this.getCategory()}`)
                     .then((response) => {
                         console.log(response);
                         if (response.data.data.length > 0) {
@@ -81,16 +93,43 @@ $(document).ready(function () {
             },
             postSeen(postId) {
                 var id = document.getElementById('postId').value;
-                axios.get(`/Home/PostSeen/?postId=${id}`)
-                    .then(function (response) {
-                        console.log(response);
-                    })
-                    .catch(function (error) {
-                        console.log(error);
-                    });
+                axios.get(`/Home/PostSeen/?postId=${id}`);
             }
         },
         watch: {
+            source_selected: function (val, oldval) {
+                if (val != "Все источники") {
+                    axios.get(`/Home/GetCategoriesBySource/?sourceId=${this.getSource()}`)
+                        .then((response) => {
+                            var categories = '';
+                            console.log(response.data);
+                            $('#categories').empty();
+                            categories += '<option>Все категории</option>';
+                            response.data.forEach(function (item) {
+                                categories += `<option value="${item.value}">${item.value}</option>`;
+                            });
+                            $('#categories').html(categories);
+                        },
+                            (error) => {
+                                this.posts = true;
+                                this.seen = false;
+                                this.notFound = true;
+                                this.isLoading(false);
+                            });
+                    this.items.length = 0;
+                    this.addPosts();
+                }
+            },
+            sort_selected: function () {
+                this.items.length = 0;
+                this.addPosts();
+            },
+            category_selected: function (val) {
+                if (val != "Все категории") {
+                    this.items.length = 0;
+                    this.addPosts();
+                }
+            },
             bottom(bottom) {
                 if (bottom) {
                     this.addPosts();

@@ -215,9 +215,9 @@ a {
     }
 
 .img-thumbnail {
-    height: 25em;
+    /*height: 25em;*/
     -o-object-fit: cover;
-    object-fit: cover;
+    /*object-fit: cover;*/
 }
 
 .card {

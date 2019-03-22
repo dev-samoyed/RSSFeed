@@ -25,7 +25,7 @@ namespace RSSFeed.Web.Controllers.Base
             _mapper = mapper;
         }
 
-        protected async Task<QueryResponse<PostModel>> GetPosts(int pageSize, int pageNumber, string query = null)
+        protected async Task<QueryResponse<PostModel>> GetPosts(int pageSize, int pageNumber, int sort, string query = null)
         {
             return await _postService.GetAsync(new QueryRequest<PostSortType>
             {
@@ -40,7 +40,8 @@ namespace RSSFeed.Web.Controllers.Base
                     new QueryOrder<PostSortType>
                     {
                         Direction = SortDirectionType.Descending,
-                        OrderType = PostSortType.PublishDate
+                        OrderType = sort == 0 ? PostSortType.PublishDate
+                                              : PostSortType.ChannelTitle
                     }
                 },
                 Search = new QuerySearch

@@ -54,11 +54,12 @@ namespace RSSFeed.Service
         protected void SaveCategory(Category category)
         {
             var existingCategory = _uow.GetRepository<Category>().All()
-                                .Where(x => x.Name == category.Name && x.ChannelId == category.ChannelId).ToList();
-            if (existingCategory.Count > 0)
+                                .Where(x => x.Name.ToLower() == category.Name.ToLower() && x.ChannelId == category.ChannelId).ToList();
+            if (existingCategory.Count >= 1)
                 return;
 
-            _uow.GetRepository<Category>().Insert(category);
+            if (category.Name.Any(char.IsLower) && category.Name.Any(char.IsUpper) && existingCategory != null)
+                _uow.GetRepository<Category>().Insert(category);
         }
         public async Task<PostModel> GetPostByIdAsync(Guid id)
         {
@@ -122,9 +123,9 @@ namespace RSSFeed.Service
             {
                 categories.Add(new CategoryModel
                 {
-                    Id = Guid.NewGuid(),
                     Name = category,
-                    Post = post
+                    Post = post,
+                    ChannelId = post.ChannelId
                 });
             }
 
@@ -172,6 +173,13 @@ namespace RSSFeed.Service
         {
             var posts = _uow.GetRepository<Post>().All().Include(x => x.Channel);
             return _mapper.Map<IEnumerable<PostModel>>(posts.OrderByDescending(post => post.CreatedAt));
+        }
+
+        public IEnumerable<CategoryModel> GetAllCategories(Guid channelId)
+        {
+            var categories = channelId == Guid.Empty ? _uow.GetRepository<Category>().All().OrderByDescending(x => x.Name)
+                                                     : _uow.GetRepository<Category>().All().OrderByDescending(x => x.Name).Where(x=>x.ChannelId == channelId);
+            return _mapper.Map<IEnumerable<CategoryModel>>(categories.OrderByDescending(x => x.Name));
         }
     }
 }

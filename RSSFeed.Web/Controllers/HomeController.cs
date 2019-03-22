@@ -24,19 +24,48 @@ namespace RSSFeed.Web.Controllers
         public IActionResult Index(string query)
         {
             ViewBag.SearchQuery = (query ?? "");
+            ViewBag.Sources = new SelectList(_channelService.GetChannels(), "Id", "Title");
+
             RecurringJob.AddOrUpdate(
                     () => RunInBackground(),
-                    Cron.MinuteInterval(1));
+                    Cron.MinuteInterval(5));
             return View();
         }
 
         // method to getting data to scrolling page
-        public async Task<JsonResult> GetData(int pageNumber, string query)
+        public async Task<JsonResult> GetData(int pageNumber, string query, string source, int sort, string category)
         {
             var pageSize = 40;
-            var postModels = await GetPosts(pageSize, pageNumber, query);
-
+            var postModels = await GetPosts(pageSize, pageNumber, sort, query);
+            var exampleId = Guid.NewGuid();
+            if (Guid.TryParse(source, out exampleId) && category != "Все категории")
+            {
+                ViewBag.Sources = new SelectList(_channelService.GetChannels(), "Id", "Title", Guid.Parse(source));
+                postModels.Data = sort == 0 ? postModels.Data.OrderByDescending(x => x.CreatedAt)
+                                                    .Where(x => x.ChannelId == Guid.Parse(source) && x.Categories.Select(cat=>cat.Name.ToLower()).Contains(category.ToLower())).ToList()
+                                            : postModels.Data.OrderByDescending(x => x.Channel.Title)
+                                                    .Where(x => x.ChannelId == Guid.Parse(source) && x.Categories.Select(cat => cat.Name.ToLower()).Contains(category.ToLower())).ToList();
+            }
+            if (Guid.TryParse(source, out exampleId))
+            {
+                ViewBag.Sources = new SelectList(_channelService.GetChannels(), "Id", "Title", Guid.Parse(source));
+                
+                postModels.Data = sort == 0 ? postModels.Data.OrderByDescending(x => x.CreatedAt).Where(x => x.ChannelId == Guid.Parse(source)).ToList()
+                                            : postModels.Data.OrderByDescending(x => x.Channel.Title).Where(x => x.ChannelId == Guid.Parse(source)).ToList();
+                
+            }
+            else
+            {
+                ViewBag.Sources = new SelectList(_channelService.GetChannels(), "Id", "Title");
+            }
             return Json(new { postModels.Data, total = postModels.RecordsTotal, filtered = postModels.RecordsFiltered });
+        }
+
+        public JsonResult GetCategoriesBySource(Guid sourceId)
+        {
+            var categories = new List<CategoryModel>();
+            categories = _postService.GetAllCategories(sourceId).ToList();
+            return Json(new SelectList(categories, "Name", "Name"));
         }
         
         public JsonResult PostSeen(string postId)
@@ -51,6 +80,12 @@ namespace RSSFeed.Web.Controllers
             // add channels, if not exist
             var channels = new List<ChannelModel>
             {
+                new ChannelModel
+                {
+                    Title = "K-News",
+                    Url = "https://knews.kg/feed/",
+                    Image = "https://knews.kg/wp-content/uploads/2016/02/logo.png"
+                },
                 new ChannelModel
                 {
                     Title = "Habr",
@@ -108,12 +143,7 @@ namespace RSSFeed.Web.Controllers
 
             return View();
         }
-
-        public IActionResult Privacy()
-        {
-            return View();
-        }
-
+        
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
