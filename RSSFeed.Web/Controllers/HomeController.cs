@@ -47,28 +47,15 @@ namespace RSSFeed.Web.Controllers
             {
                 ViewBag.Sources = new SelectList(_channelService.GetChannels(), "Id", "Title");
             }
-
-            var posts = new PostViewModel
-            {
-                Posts = postModels.Data
-            };
-
-            foreach (var post in posts.Posts)
-            {
-                foreach (var ca in post.Categories)
-                {
-                    ca.Post = null;
-                }
-            }
-
-            return Json(new { posts.Posts, total = postModels.RecordsTotal, filtered = postModels.RecordsFiltered });
+            
+            return Json(new { postModels.Data, total = postModels.RecordsTotal, filtered = postModels.RecordsFiltered });
         }
 
         public JsonResult GetCategoriesBySource(Guid sourceId)
         {
             var categories = new List<CategoryModel>();
             categories = _postService.GetAllCategories(sourceId).ToList();
-            return Json(new SelectList(categories, "Name", "Name"));
+            return Json(new SelectList(categories.Distinct(), "Name", "Name"));
         }
         
         public JsonResult PostSeen(string postId)
@@ -130,6 +117,8 @@ namespace RSSFeed.Web.Controllers
                     channelItem.Body = Regex.Replace(channelItem.Body, @"<[^>]*(>|$)|&nbsp;|&zwnj;|&raquo;|&laquo;|&mdash;", " ").Trim();
                     _postService.AddPost(channelItem);
                 }
+
+                _postService.DeleteExcessCategories(channel.Id);
             }
         }
 
@@ -151,18 +140,6 @@ namespace RSSFeed.Web.Controllers
         public IActionResult Error()
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
-        }
-
-        private void GetFreshPosts(IEnumerable<ChannelModel> channelModels)
-        {
-            foreach (var channel in channelModels)
-            {
-                var feedItems = _postService.FeedItems(channel);
-                foreach (var channelItem in feedItems)
-                {
-                    _postService.AddPost(channelItem);
-                }
-            }
         }
     }
 }

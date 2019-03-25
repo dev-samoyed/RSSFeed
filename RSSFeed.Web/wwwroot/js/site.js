@@ -66,10 +66,10 @@ $(document).ready(function () {
                 axios.get(`/Home/GetData/?pageNumber=${this.page}&query=${this.getQuery()}&source=${this.getSource()}&sort=${this.getSort()}&category=${this.getCategory()}`)
                     .then((response) => {
                         console.log(response);
-                        if (response.data.posts.length > 0) {
+                        if (response.data.data.length > 0) {
                             this.notFound = false;
                             this.seen = true;
-                            response.data.posts.forEach(function (item) {
+                            response.data.data.forEach(function (item) {
                                 if (item.body.length > 170) {
                                     item.body = item.body.substring(0, 170) + "...";
                                 }
@@ -101,6 +101,7 @@ $(document).ready(function () {
                 if (val != "Все источники") {
                     axios.get(`/Home/GetCategoriesBySource/?sourceId=${this.getSource()}`)
                         .then((response) => {
+                            this.page = 1;
                             var categories = '';
                             console.log(response.data);
                             $('#categories').empty();
@@ -122,11 +123,13 @@ $(document).ready(function () {
             },
             sort_selected: function () {
                 this.items.length = 0;
+                this.page = 1;
                 this.addPosts();
             },
             category_selected: function (val) {
                 if (val != "Все категории") {
                     this.items.length = 0;
+                    this.page = 1;
                     this.addPosts();
                 }
             },

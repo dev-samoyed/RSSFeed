@@ -10,6 +10,7 @@ namespace RSSFeed.Service.Models
     {
         public string Name { get; set; }
         public Guid? PostId { get; set; }
+        [JsonIgnore]
         public PostModel Post { get; set; }
         public Guid? ChannelId { get; set; }
     }

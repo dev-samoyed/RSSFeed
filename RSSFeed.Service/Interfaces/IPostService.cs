@@ -17,5 +17,6 @@ namespace RSSFeed.Service.Interfaces
         void AddPost(PostModel postModel);
         IList<PostModel> FeedItems(ChannelModel channel);
         void PostSeen(Guid postId);
+        void DeleteExcessCategories(Guid channelId);
     }
 }

@@ -40,27 +40,32 @@ namespace RSSFeed.Service
             post.Title = Regex.Replace(post.Title, @"<[^>]*(>|$)|&nbsp;|&zwnj;|&raquo;|&laquo;|&mdash;", " ").Trim();
             post.Body = Regex.Replace(post.Body, @"<[^>]*(>|$)|&nbsp;|&zwnj;|&raquo;|&laquo;|&mdash;", " ").Trim();
 
-            _uow.GetRepository<Post>().Insert(post);
-
             foreach (var category in post.Categories)
             {
                 category.ChannelId = post.ChannelId;
-                SaveCategory(category);
+                SaveCategories(category);
             }
 
+            _uow.GetRepository<Post>().Insert(post);
             _uow.SaveChanges();
         }
-        
-        protected void SaveCategory(Category category)
+
+        protected void SaveCategories(Category category)
         {
-            var existingCategory = _uow.GetRepository<Category>().All()
-                                .Where(x => x.Name.ToLower() == category.Name.ToLower() && x.ChannelId == category.ChannelId).ToList();
-            if (existingCategory.Count >= 1)
+            var existingCategories = _uow.GetRepository<Category>().All()
+                                        .Where(x => x.Name == category.Name && x.ChannelId.Value == category.ChannelId.Value).GroupBy(x=>x.Name).ToList();
+
+            if (existingCategories.Count > 0)
                 return;
 
             if (category.Name.Any(char.IsLower) && category.Name.Any(char.IsUpper))
+            {
                 _uow.GetRepository<Category>().Insert(category);
+                return;
+            }
+            return;
         }
+        
         public async Task<PostModel> GetPostByIdAsync(Guid id)
         {
             var post = await _uow.GetRepository<Post>().All()
@@ -82,7 +87,6 @@ namespace RSSFeed.Service
             var postModels = new List<PostModel>();
             var readerTask = FeedReader.ReadAsync(channel.Url);
             readerTask.ConfigureAwait(false);
-
             
             foreach (var item in readerTask.Result.Items)
             {
@@ -101,8 +105,6 @@ namespace RSSFeed.Service
                     ImageUrl = image.FirstOrDefault(x => x.Name.LocalName.Contains("enclosure")) != null 
                                 ? item.SpecificItem.Element.Descendants().First(x => x.Name.LocalName == "enclosure").Attribute("url").Value
                                 : channel.Image
-
-
                 };
 
                 var categories = GetCategories(item, channelItem);
@@ -207,6 +209,11 @@ namespace RSSFeed.Service
             var categories = channelId == Guid.Empty ? _uow.GetRepository<Category>().All().OrderByDescending(x => x.Name)
                                                      : _uow.GetRepository<Category>().All().OrderByDescending(x => x.Name).Where(x=>x.ChannelId == channelId);
             return _mapper.Map<IEnumerable<CategoryModel>>(categories.OrderByDescending(x => x.Name));
+        }
+
+        public void DeleteExcessCategories(Guid channelId)
+        {
+            
         }
     }
 }
