@@ -15,8 +15,8 @@ namespace RSSFeed.Service.Interfaces
         IEnumerable<PostModel> GetPosts();
         Task<PostModel> GetPostByIdAsync(Guid id);
         void AddPost(PostModel postModel);
-        IList<PostModel> FeedItems(ChannelModel channel);
+        IDictionary<PostModel, CategoryModel> FeedItems(ChannelModel channel);
         void PostSeen(Guid postId);
-        void DeleteExcessCategories(Guid channelId);
+        void AddCategories(CategoryModel category, Guid channelId);
     }
 }

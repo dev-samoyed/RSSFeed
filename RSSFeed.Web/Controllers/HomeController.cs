@@ -101,7 +101,7 @@ namespace RSSFeed.Web.Controllers
                     Image = "https://kaktus.media/lenta4/static/img/logo.png?2"
                 }
             };
-
+            
             foreach (var channel in channels)
             {
                 _channelService.AddChannel(channel);
@@ -111,14 +111,15 @@ namespace RSSFeed.Web.Controllers
             foreach (var channel in channelModels)
             {
                 var feedItems = _postService.FeedItems(channel);
-                foreach (var channelItem in feedItems)
+                foreach (KeyValuePair<PostModel, CategoryModel> keyValuePair in feedItems)
                 {
-                    channelItem.Title = Regex.Replace(channelItem.Title, @"<[^>]*(>|$)|&nbsp;|&zwnj;|&raquo;|&laquo;|&mdash;", " ").Trim();
-                    channelItem.Body = Regex.Replace(channelItem.Body, @"<[^>]*(>|$)|&nbsp;|&zwnj;|&raquo;|&laquo;|&mdash;", " ").Trim();
-                    _postService.AddPost(channelItem);
+                    keyValuePair.Key.Title = Regex.Replace(keyValuePair.Key.Title, @"<[^>]*(>|$)|&nbsp;|&zwnj;|&raquo;|&laquo;|&mdash;", " ").Trim();
+                    keyValuePair.Key.Body = Regex.Replace(keyValuePair.Key.Body, @"<[^>]*(>|$)|&nbsp;|&zwnj;|&raquo;|&laquo;|&mdash;", " ").Trim();
+                    //add post
+                    _postService.AddPost(keyValuePair.Key);
+                    //add category
+                    _postService.AddCategories(keyValuePair.Value, channel.Id);
                 }
-
-                _postService.DeleteExcessCategories(channel.Id);
             }
         }
 

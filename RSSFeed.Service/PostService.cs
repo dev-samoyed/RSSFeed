@@ -39,31 +39,9 @@ namespace RSSFeed.Service
             post = _mapper.Map<Post>(postModel);
             post.Title = Regex.Replace(post.Title, @"<[^>]*(>|$)|&nbsp;|&zwnj;|&raquo;|&laquo;|&mdash;", " ").Trim();
             post.Body = Regex.Replace(post.Body, @"<[^>]*(>|$)|&nbsp;|&zwnj;|&raquo;|&laquo;|&mdash;", " ").Trim();
-
-            foreach (var category in post.Categories)
-            {
-                category.ChannelId = post.ChannelId;
-                SaveCategories(category);
-            }
-
+            
             _uow.GetRepository<Post>().Insert(post);
             _uow.SaveChanges();
-        }
-
-        protected void SaveCategories(Category category)
-        {
-            var existingCategories = _uow.GetRepository<Category>().All()
-                                        .Where(x => x.Name == category.Name && x.ChannelId.Value == category.ChannelId.Value).GroupBy(x=>x.Name).ToList();
-
-            if (existingCategories.Count > 0)
-                return;
-
-            if (category.Name.Any(char.IsLower) && category.Name.Any(char.IsUpper))
-            {
-                _uow.GetRepository<Category>().Insert(category);
-                return;
-            }
-            return;
         }
         
         public async Task<PostModel> GetPostByIdAsync(Guid id)
@@ -82,12 +60,12 @@ namespace RSSFeed.Service
             return _mapper.Map<IEnumerable<PostModel>>(posts.OrderByDescending(post => post.CreatedAt));
         }
 
-        public IList<PostModel> FeedItems(ChannelModel channel)
+        public IDictionary<PostModel, CategoryModel> FeedItems(ChannelModel channel)
         {
-            var postModels = new List<PostModel>();
+            var items = new Dictionary<PostModel, CategoryModel>();
             var readerTask = FeedReader.ReadAsync(channel.Url);
             readerTask.ConfigureAwait(false);
-            
+
             foreach (var item in readerTask.Result.Items)
             {
                 var image = item.SpecificItem.Element.Descendants().ToList();
@@ -102,38 +80,28 @@ namespace RSSFeed.Service
                     IsNew = true,
                     PostUrl = item.Link,
                     Body = item.Description,
-                    ImageUrl = image.FirstOrDefault(x => x.Name.LocalName.Contains("enclosure")) != null 
+                    ImageUrl = image.FirstOrDefault(x => x.Name.LocalName.Contains("enclosure")) != null
                                 ? item.SpecificItem.Element.Descendants().First(x => x.Name.LocalName == "enclosure").Attribute("url").Value
-                                : channel.Image
+                                : channel.Image,
+                    CategoryName = item.Categories.FirstOrDefault()
                 };
-
-                var categories = GetCategories(item, channelItem);
-
-                channelItem.Categories = categories;
                 
-                postModels.Add(channelItem);
-            }
+                var category = _uow.GetRepository<Category>().All()
+                        .FirstOrDefault(x => x.Name == item.Categories.FirstOrDefault() && x.ChannelId == channel.Id);
 
-            return postModels;
-        }
-
-        protected IList<CategoryModel> GetCategories(FeedItem item, PostModel post)
-        {
-            var categories = new List<CategoryModel>();
-
-            foreach (var category in item.Categories)
-            {
-                categories.Add(new CategoryModel
+                var categoryModel = new CategoryModel();
+                if (category == null)
                 {
-                    Name = category,
-                    Post = post,
-                    ChannelId = post.ChannelId
-                });
+                    categoryModel.Name = item.Categories.FirstOrDefault();
+                    categoryModel.ChannelId = channel.Id;
+                }
+
+                items.Add(channelItem, categoryModel);
             }
 
-            return categories;
+            return items;
         }
-
+        
         protected override IQueryable<Post> Order(IQueryable<Post> items, bool isFirst, QueryOrder<PostSortType> order)
         {
             switch (order.OrderType)
@@ -167,7 +135,7 @@ namespace RSSFeed.Service
             {
                 if (category.Value != "Все категории")
                 {
-                    var posts = items.Where(x => x.Categories.Select(y => y.Name).Contains(category.Value));
+                    var posts = items.Where(x => x.CategoryName.Contains(category.Value));
                     return posts;
                 }
             }
@@ -210,10 +178,29 @@ namespace RSSFeed.Service
                                                      : _uow.GetRepository<Category>().All().OrderByDescending(x => x.Name).Where(x=>x.ChannelId == channelId);
             return _mapper.Map<IEnumerable<CategoryModel>>(categories.OrderByDescending(x => x.Name));
         }
-
-        public void DeleteExcessCategories(Guid channelId)
+        
+        public void AddCategories(CategoryModel categoryModel, Guid channelId)
         {
-            
+            try
+            {
+                if (categoryModel.Name.Any(char.IsLower) && categoryModel.Name.Any(char.IsUpper) && categoryModel.Name != null)
+                {
+                    var existingCategories = _uow.GetRepository<Category>().All()
+                                        .FirstOrDefault(x => x.Name == categoryModel.Name && x.ChannelId == channelId);
+
+                    if (existingCategories != null)
+                        return;
+
+                    var category = _mapper.Map<Category>(categoryModel);
+                    _uow.GetRepository<Category>().Insert(category);
+                    _uow.SaveChanges();
+                }
+            }
+            catch (Exception)
+            {
+                Console.WriteLine("Duplicate");
+                return;
+            }
         }
     }
 }

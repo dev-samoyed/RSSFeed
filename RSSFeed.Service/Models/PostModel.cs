@@ -15,8 +15,7 @@ namespace RSSFeed.Service.Models
         public ChannelModel Channel { get; set; }
         public bool IsSeen { get; set; }
         public bool IsNew { get; set; }
-        [JsonIgnore]
-        public ICollection<CategoryModel> Categories { get; set; }
+        public string CategoryName { get; set; }
         public string ImageUrl { get; set; }
     }
 }

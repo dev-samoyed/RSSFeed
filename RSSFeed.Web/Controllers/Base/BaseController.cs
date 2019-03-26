@@ -34,7 +34,7 @@ namespace RSSFeed.Web.Controllers.Base
                 Includes = new[]
                 {
                     "Channel",
-                    "Categories"
+                    "Category"
                 },
                 OrderQueries = new[]
                 {

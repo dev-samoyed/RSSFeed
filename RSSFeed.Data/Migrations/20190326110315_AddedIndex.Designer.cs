@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using RSSFeed.Data;
 
 namespace RSSFeed.Data.Migrations
 {
     [DbContext(typeof(RSSContext))]
-    partial class RSSContextModelSnapshot : ModelSnapshot
+    [Migration("20190326110315_AddedIndex")]
+    partial class AddedIndex
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -28,9 +30,15 @@ namespace RSSFeed.Data.Migrations
 
                     b.Property<string>("Name");
 
+                    b.Property<Guid?>("PostId");
+
                     b.HasKey("Id");
 
                     b.HasIndex("ChannelId");
+
+                    b.HasIndex("PostId")
+                        .IsUnique()
+                        .HasFilter("[PostId] IS NOT NULL");
 
                     b.HasIndex("Name", "ChannelId")
                         .IsUnique()
@@ -64,8 +72,6 @@ namespace RSSFeed.Data.Migrations
 
                     b.Property<string>("Body");
 
-                    b.Property<string>("CategoryName");
-
                     b.Property<Guid?>("ChannelId");
 
                     b.Property<DateTime>("CreatedAt");
@@ -92,6 +98,10 @@ namespace RSSFeed.Data.Migrations
                     b.HasOne("RSSFeed.Data.Entities.Channel", "Channel")
                         .WithMany("Categories")
                         .HasForeignKey("ChannelId");
+
+                    b.HasOne("RSSFeed.Data.Entities.Post", "Post")
+                        .WithOne("Category")
+                        .HasForeignKey("RSSFeed.Data.Entities.Category", "PostId");
                 });
 
             modelBuilder.Entity("RSSFeed.Data.Entities.Post", b =>
