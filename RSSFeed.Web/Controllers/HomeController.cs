@@ -18,8 +18,8 @@ namespace RSSFeed.Web.Controllers
 {
     public class HomeController : BaseController
     {
-        public HomeController(IPostService postService, IChannelService channelService, IMapper mapper) 
-            : base(postService, channelService, mapper) { }
+        public HomeController(IPostService postService, IChannelService channelService, ICategoryService categoryService, IMapper mapper) 
+            : base(postService, channelService, categoryService, mapper) { }
 
         public IActionResult Index(string query)
         {
@@ -54,8 +54,8 @@ namespace RSSFeed.Web.Controllers
         public JsonResult GetCategoriesBySource(Guid sourceId)
         {
             var categories = new List<CategoryModel>();
-            categories = _postService.GetAllCategories(sourceId).ToList();
-            return Json(new SelectList(categories.Distinct(), "Name", "Name"));
+            categories = _categoryService.GetAllCategories(sourceId).ToList();
+            return Json(new SelectList(categories, "Name", "Name"));
         }
         
         public JsonResult PostSeen(string postId)
@@ -118,7 +118,7 @@ namespace RSSFeed.Web.Controllers
                     //add post
                     _postService.AddPost(keyValuePair.Key);
                     //add category
-                    _postService.AddCategories(keyValuePair.Value, channel.Id);
+                    _categoryService.AddCategories(keyValuePair.Value, channel.Id);
                 }
             }
         }

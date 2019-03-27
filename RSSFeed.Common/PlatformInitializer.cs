@@ -34,7 +34,7 @@ namespace RSSFeed.Common
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IPostService, PostService>();
             services.AddScoped<IChannelService, ChannelService>();
-
+            services.AddScoped<ICategoryService, CategoryService>();
         }
 
         protected virtual void ConfigureDatabase(IServiceCollection services)

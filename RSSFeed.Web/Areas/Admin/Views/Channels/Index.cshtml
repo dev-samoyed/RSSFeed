@@ -1,0 +1,21 @@
+﻿
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h3 class="vue-title">Vue Tables 2 Demo - Client Component</h3>
+
+<div id="app">
+    <v-client-table :columns="columns" :data="data" :options="options">
+        <a slot="uri" slot-scope="props" target="_blank" :href="props.row.uri" class="glyphicon glyphicon-eye-open"></a>
+
+        <div slot="child_row" slot-scope="props">
+            The link to {{props.row.name}} is <a :href="props.row.uri">{{props.row.uri}}</a>
+        </div>
+
+    </v-client-table>
+</div>
+
+<p class="vue-pagination-ad">
+    Like the pagination component and want to use it independently? Try <a target="_blank" href="https://www.npmjs.com/package/vue-pagination-2">vue-pagination-2</a>
+</p>

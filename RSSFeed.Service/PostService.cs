@@ -172,35 +172,5 @@ namespace RSSFeed.Service
             return _mapper.Map<IEnumerable<PostModel>>(posts.OrderByDescending(post => post.CreatedAt));
         }
 
-        public IEnumerable<CategoryModel> GetAllCategories(Guid channelId)
-        {
-            var categories = channelId == Guid.Empty ? _uow.GetRepository<Category>().All().OrderByDescending(x => x.Name)
-                                                     : _uow.GetRepository<Category>().All().OrderByDescending(x => x.Name).Where(x=>x.ChannelId == channelId);
-            return _mapper.Map<IEnumerable<CategoryModel>>(categories.OrderByDescending(x => x.Name));
-        }
-        
-        public void AddCategories(CategoryModel categoryModel, Guid channelId)
-        {
-            try
-            {
-                if (categoryModel.Name.Any(char.IsLower) && categoryModel.Name.Any(char.IsUpper) && categoryModel.Name != null)
-                {
-                    var existingCategories = _uow.GetRepository<Category>().All()
-                                        .FirstOrDefault(x => x.Name == categoryModel.Name && x.ChannelId == channelId);
-
-                    if (existingCategories != null)
-                        return;
-
-                    var category = _mapper.Map<Category>(categoryModel);
-                    _uow.GetRepository<Category>().Insert(category);
-                    _uow.SaveChanges();
-                }
-            }
-            catch (Exception)
-            {
-                Console.WriteLine("Duplicate");
-                return;
-            }
-        }
     }
 }

@@ -16,12 +16,14 @@ namespace RSSFeed.Web.Controllers.Base
     {
         protected readonly IPostService _postService;
         protected readonly IChannelService _channelService;
+        protected readonly ICategoryService _categoryService;
         protected readonly IMapper _mapper;
 
-        public BaseController(IPostService postService, IChannelService channelService, IMapper mapper)
+        public BaseController(IPostService postService, IChannelService channelService, ICategoryService categoryService, IMapper mapper)
         {
             _postService = postService;
             _channelService = channelService;
+            _categoryService = categoryService;
             _mapper = mapper;
         }
 
@@ -33,8 +35,7 @@ namespace RSSFeed.Web.Controllers.Base
                 Length = pageSize,
                 Includes = new[]
                 {
-                    "Channel",
-                    "Category"
+                    "Channel"
                 },
                 OrderQueries = new[]
                 {

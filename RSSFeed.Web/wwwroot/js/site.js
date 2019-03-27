@@ -65,11 +65,17 @@ $(document).ready(function () {
                 this.isLoading(true);
                 axios.get(`/Home/GetData/?pageNumber=${this.page}&query=${this.getQuery()}&source=${this.getSource()}&sort=${this.getSort()}&category=${this.getCategory()}`)
                     .then((response) => {
-                        console.log(response);
                         if (response.data.data.length > 0) {
                             this.notFound = false;
                             this.seen = true;
                             response.data.data.forEach(function (item) {
+                                if (item.imageUrl == "https://knews.kg/wp-content/uploads/2016/02/logo.png") {
+                                    item.imageClasses = "card-img-top image img-fluid img-thumbnail img-background";
+                                }
+                                else {
+                                    item.imageClasses = 'card-img-top image img-fluid img-thumbnail';
+                                }
+
                                 if (item.body.length > 170) {
                                     item.body = item.body.substring(0, 170) + "...";
                                 }
@@ -98,14 +104,13 @@ $(document).ready(function () {
         },
         watch: {
             source_selected: function (val, oldval) {
+                this.page = 1;
+                var categories = '';
+                $('#categories').empty();
+                categories += '<option selected>Все категории</option>';
                 if (val != "Все источники") {
                     axios.get(`/Home/GetCategoriesBySource/?sourceId=${this.getSource()}`)
                         .then((response) => {
-                            this.page = 1;
-                            var categories = '';
-                            console.log(response.data);
-                            $('#categories').empty();
-                            categories += '<option selected>Все категории</option>';
                             response.data.forEach(function (item) {
                                 categories += `<option value="${item.value}">${item.value}</option>`;
                             });
@@ -127,9 +132,9 @@ $(document).ready(function () {
                 this.addPosts();
             },
             category_selected: function (val) {
+                this.page = 1;
                 if (val != "Все категории") {
                     this.items.length = 0;
-                    this.page = 1;
                     this.addPosts();
                 }
             },
@@ -141,8 +146,6 @@ $(document).ready(function () {
         },
         mounted() {
             this.$nextTick(function () {
-                //window.addEventListener('resize', this.getWindowWidth);
-                //Init
                 this.getWindowWidth();
             });
 
