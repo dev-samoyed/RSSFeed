@@ -1,12 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using AutoMapper;
+﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using RSSFeed.Service.Enums;
 using RSSFeed.Service.Interfaces;
+using RSSFeed.Service.Models;
 using RSSFeed.Service.Query;
+using System;
+using System.Threading.Tasks;
 
 namespace RSSFeed.Web.Areas.Admin.Controllers
 {
@@ -18,7 +17,6 @@ namespace RSSFeed.Web.Areas.Admin.Controllers
 
         public IActionResult Index(string query = null)
         {
-           
             return View();
         }
 
@@ -27,11 +25,11 @@ namespace RSSFeed.Web.Areas.Admin.Controllers
             var channels = await _channelService.GetAsync(new QueryRequest<PostSortType>
             {
                 Includes = new[]
-               {
+                {
                     "Categories"
                 },
                 OrderQueries = new[]
-               {
+                {
                     new QueryOrder<PostSortType>
                     {
                         Direction = SortDirectionType.Descending,
@@ -39,7 +37,34 @@ namespace RSSFeed.Web.Areas.Admin.Controllers
                     }
                 }
             });
-            return Json(new { channels.Data});
+            return Json(new { channels.Data });
+        }
+        
+        public JsonResult Create(string imageUrl, string title, string url)
+        {
+            var channel = new ChannelModel()
+            {
+                Image = imageUrl,
+                Url = url,
+                Title = title
+            };
+            _channelService.AddChannel(channel);
+            return Json(new { data = "success" });
+        }
+
+        public JsonResult Delete(string id)
+        {
+            try
+            {
+                var testId = Guid.NewGuid();
+                if (Guid.TryParse(id, out testId))
+                    _channelService.Delete(Guid.Parse(id));
+                return Json(new { data = "success" });
+            }
+            catch (Exception)
+            {
+                return Json(new { data = "failed" });
+            }
         }
     }
 }

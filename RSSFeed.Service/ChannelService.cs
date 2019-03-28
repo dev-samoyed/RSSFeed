@@ -35,6 +35,13 @@ namespace RSSFeed.Service
             _uow.SaveChanges();
         }
 
+        public void Delete(Guid id)
+        {
+            var channel = _uow.GetRepository<Channel>().GetById(id);
+            _uow.GetRepository<Channel>().Delete(channel);
+            _uow.SaveChanges();
+        }
+
         public ChannelModel GetById(Guid id)
         {
             var channel = _uow.GetRepository<Channel>().GetById(id);
