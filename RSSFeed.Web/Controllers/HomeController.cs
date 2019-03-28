@@ -55,6 +55,7 @@ namespace RSSFeed.Web.Controllers
         {
             var categories = new List<CategoryModel>();
             categories = _categoryService.GetAllCategories(sourceId).ToList();
+            categories.Insert(0, (new CategoryModel { Name = "Все категории"}));
             return Json(new SelectList(categories, "Name", "Name"));
         }
         

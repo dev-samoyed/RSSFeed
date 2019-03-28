@@ -68,6 +68,7 @@ $(document).ready(function () {
                         if (response.data.data.length > 0) {
                             this.notFound = false;
                             this.seen = true;
+
                             response.data.data.forEach(function (item) {
                                 if (item.imageUrl == "https://knews.kg/wp-content/uploads/2016/02/logo.png") {
                                     item.imageClasses = "card-img-top image img-fluid img-thumbnail img-background";
@@ -100,31 +101,33 @@ $(document).ready(function () {
             postSeen(postId) {
                 var id = document.getElementById('postId').value;
                 axios.get(`/Home/PostSeen/?postId=${id}`);
+            },
+            saveCategories() {
+                var categories = '';
+                var categoryList = $('#categories');
+                
+                axios.get(`/Home/GetCategoriesBySource/?sourceId=${this.getSource()}`)
+                    .then((response) => {
+                        response.data.forEach(function (item) {
+                            categories += `<option value="${item.value}">${item.value}</option>`;
+                        });
+                        this.category_selected = 'Все категории';
+                        categoryList.html(categories);
+                    },
+                        (error) => {
+                            this.posts = true;
+                            this.seen = false;
+                            this.notFound = true;
+                            this.isLoading(false);
+                        });
             }
         },
         watch: {
             source_selected: function (val, oldval) {
                 this.page = 1;
-                var categories = '';
-                $('#categories').empty();
-                categories += '<option selected>Все категории</option>';
-                if (val != "Все источники") {
-                    axios.get(`/Home/GetCategoriesBySource/?sourceId=${this.getSource()}`)
-                        .then((response) => {
-                            response.data.forEach(function (item) {
-                                categories += `<option value="${item.value}">${item.value}</option>`;
-                            });
-                            $('#categories').html(categories);
-                        },
-                            (error) => {
-                                this.posts = true;
-                                this.seen = false;
-                                this.notFound = true;
-                                this.isLoading(false);
-                            });
-                    this.items.length = 0;
-                    this.addPosts();
-                }
+                this.saveCategories();
+                this.items.length = 0;
+                this.addPosts();
             },
             sort_selected: function () {
                 this.items.length = 0;
@@ -133,10 +136,8 @@ $(document).ready(function () {
             },
             category_selected: function (val) {
                 this.page = 1;
-                if (val != "Все категории") {
-                    this.items.length = 0;
-                    this.addPosts();
-                }
+                this.items.length = 0;
+                this.addPosts();
             },
             bottom(bottom) {
                 if (bottom) {
@@ -148,10 +149,8 @@ $(document).ready(function () {
             this.$nextTick(function () {
                 this.getWindowWidth();
             });
-
         },
         created() {
-
             window.addEventListener('scroll', () => {
                 this.bottom = this.bottomVisible();
             });

@@ -18,8 +18,28 @@ namespace RSSFeed.Web.Areas.Admin.Controllers
 
         public IActionResult Index(string query = null)
         {
-            
+           
             return View();
+        }
+
+        public async Task<JsonResult> GetData()
+        {
+            var channels = await _channelService.GetAsync(new QueryRequest<PostSortType>
+            {
+                Includes = new[]
+               {
+                    "Categories"
+                },
+                OrderQueries = new[]
+               {
+                    new QueryOrder<PostSortType>
+                    {
+                        Direction = SortDirectionType.Descending,
+                        OrderType = PostSortType.ChannelTitle
+                    }
+                }
+            });
+            return Json(new { channels.Data});
         }
     }
 }

@@ -45,9 +45,9 @@ namespace RSSFeed.Service
 
         public IEnumerable<CategoryModel> GetAllCategories(Guid channelId)
         {
-            var categories = channelId == Guid.Empty ? _uow.GetRepository<Category>().All().OrderByDescending(x => x.Name)
-                                                     : _uow.GetRepository<Category>().All().OrderByDescending(x => x.Name).Where(x => x.ChannelId == channelId);
-            return _mapper.Map<IEnumerable<CategoryModel>>(categories.OrderByDescending(x => x.Name));
+            var categories = channelId == Guid.Empty ? _uow.GetRepository<Category>().All()
+                                                     : _uow.GetRepository<Category>().All().Where(x => x.ChannelId == channelId);
+            return _mapper.Map<IEnumerable<CategoryModel>>(categories.OrderBy(x => x.Name));
         }
 
         protected override IQueryable<Category> Category(IQueryable<Category> items, QuerySearch category)

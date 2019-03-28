@@ -35,11 +35,6 @@ namespace RSSFeed.Service
             _uow.SaveChanges();
         }
 
-        public override Task<QueryResponse<ChannelModel>> GetAsync(QueryRequest<PostSortType> query)
-        {
-            throw new NotImplementedException();
-        }
-
         public ChannelModel GetById(Guid id)
         {
             var channel = _uow.GetRepository<Channel>().GetById(id);
@@ -54,22 +49,22 @@ namespace RSSFeed.Service
 
         protected override IQueryable<Channel> Category(IQueryable<Channel> items, QuerySearch category)
         {
-            throw new NotImplementedException();
+            return items;
         }
 
         protected override IQueryable<Channel> Order(IQueryable<Channel> items, bool isFirst, QueryOrder<PostSortType> order)
         {
-            throw new NotImplementedException();
+            return items;
         }
 
         protected override IQueryable<Channel> Search(IQueryable<Channel> items, QuerySearch search)
         {
-            throw new NotImplementedException();
+            return items;
         }
 
         protected override IQueryable<Channel> SourceOrder(IQueryable<Channel> items, QuerySearch source)
         {
-            throw new NotImplementedException();
+            return items;
         }
     }
 }
