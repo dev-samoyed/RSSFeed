@@ -11,6 +11,7 @@
     <script src="~/lib/jquery-ajax-unobtrusive/src/jquery.unobtrusive-ajax.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.10/vue.min.js"></script>
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="~/lib/vue-go-top/dist/vue-go-top.min.js"></script>
     <script src="~/js/site.js"></script>
 </head>
 <body>
@@ -44,7 +45,9 @@
                             </select>
                         </li>
                     </ul>
-                    <input value="@ViewBag.SearchQuery" name="query" class="form-control" type="text" placeholder="Search">
+                    <div>
+                        <input value="@ViewBag.SearchQuery" name="query" class="form-control" type="text" v-model="query" placeholder="Поиск">
+                    </div>
                 </div>
             </div>
         </nav>
@@ -53,6 +56,7 @@
             @RenderBody()
         </div>
         <div id="loader" class="loading" v-if="loader"></div>
+        <go-top></go-top>
     </div>
 
     <footer class="footer">

@@ -2,7 +2,7 @@
 // for details on configuring this project to bundle and minify static web assets.
 
 // Write your JavaScript code.
-
+Vue.use(GoTop);
 $(document).ready(function () {
     new Vue({
         el: '#posts',
@@ -16,6 +16,7 @@ $(document).ready(function () {
             bottom: false,
             displayBlock: '',
             source_selected: 'Все источники',
+            query: '',
             sort_selected: 0,
             category_selected: 'Все категории',
             items: []
@@ -123,6 +124,11 @@ $(document).ready(function () {
             }
         },
         watch: {
+            query: function () {
+                this.page = 1;
+                this.items.length = 0;
+                this.addPosts();
+            },
             source_selected: function (val, oldval) {
                 this.page = 1;
                 this.saveCategories();
