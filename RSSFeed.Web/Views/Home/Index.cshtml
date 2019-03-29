@@ -3,7 +3,8 @@
     <div class="card" v-for="post in items">
         <a :href="post.postUrl" id="getVideo" target="_blank" v-on:click="postSeen(post.id)">
             <input type="hidden" id="postId" v-model="post.id" />
-            <img class="card-img-top image img-fluid img-thumbnail" :src="post.imageUrl">
+            <img class="card-img-top image img-logo img-thumbnail" :src="post.channel.image">
+            <img :class="post.imageClasses" :src="post.imageUrl">
             <div class="card-body">
                 <h5 class="card-title">{{ post.title }}</h5>
                 <p class="card-description">{{ post.body }}</p>

@@ -8,9 +8,7 @@ namespace RSSFeed.Data.Entities
     public class Category : EntityBase<Guid>
     {
         public string Name { get; set; }
-        public Guid? PostId { get; set; }
-        public virtual Post Post { get; set; }
-
         public Guid? ChannelId { get; set; }
+        public virtual Channel Channel { get; set; }
     }
 }

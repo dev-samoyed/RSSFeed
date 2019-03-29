@@ -215,9 +215,9 @@ a {
     }
 
 .img-thumbnail {
-    height: 25em;
+    /*height: 25em;*/
     -o-object-fit: cover;
-    object-fit: cover;
+    /*object-fit: cover;*/
 }
 
 .card {
@@ -225,6 +225,19 @@ a {
     margin: 1rem;
 }
 
+.img-background {
+    background-color: #212529;
+    border-color: #212529;
+}
+
+.img-logo {
+    position: absolute;
+    top: 6px;
+    left: 6px;
+    background-color: #212529;
+    border-color: #212529;
+    width: 25%;
+}
 /* Absolute Center Spinner */
 .loading {
     position: fixed;

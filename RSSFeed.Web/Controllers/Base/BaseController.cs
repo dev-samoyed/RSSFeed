@@ -16,16 +16,18 @@ namespace RSSFeed.Web.Controllers.Base
     {
         protected readonly IPostService _postService;
         protected readonly IChannelService _channelService;
+        protected readonly ICategoryService _categoryService;
         protected readonly IMapper _mapper;
 
-        public BaseController(IPostService postService, IChannelService channelService, IMapper mapper)
+        public BaseController(IPostService postService, IChannelService channelService, ICategoryService categoryService, IMapper mapper)
         {
             _postService = postService;
             _channelService = channelService;
+            _categoryService = categoryService;
             _mapper = mapper;
         }
 
-        protected async Task<QueryResponse<PostModel>> GetPosts(int pageSize, int pageNumber, string query = null)
+        protected async Task<QueryResponse<PostModel>> GetPosts(int pageSize, int pageNumber, int sort, string category, string source, string query = null)
         {
             return await _postService.GetAsync(new QueryRequest<PostSortType>
             {
@@ -40,12 +42,21 @@ namespace RSSFeed.Web.Controllers.Base
                     new QueryOrder<PostSortType>
                     {
                         Direction = SortDirectionType.Descending,
-                        OrderType = PostSortType.PublishDate
+                        OrderType = sort == 0 ? PostSortType.PublishDate
+                                              : PostSortType.ChannelTitle
                     }
                 },
                 Search = new QuerySearch
                 {
                     Value = query
+                },
+                Category = new QuerySearch
+                {
+                    Value = category
+                },
+                SourceOrder = new QuerySearch
+                {
+                    Value = source
                 }
             });
         }

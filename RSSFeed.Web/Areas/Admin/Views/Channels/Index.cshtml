@@ -1,0 +1,26 @@
+﻿
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h3 class="vue-title">Channels</h3>
+
+<div id="app">
+    <a class="btn btn-success fa fa-plus" v-on:click="createChannel = !createChannel"></a>
+    <div v-if="createChannel">
+        <p>{{ message }}</p>
+        <form v-on:submit="sub" method="get">
+            <input type="text" v-model="title" placeholder="Channel Title" />
+            <input type="text" v-model="url" placeholder="Channel URL" />
+            <input type="text" v-model="imageUrl" placeholder="Image URL" />
+            <button type="submit">Добавить канал</button>
+        </form>
+    </div>
+    <v-client-table :columns="columns" :data="data" :options="options">
+        <div slot="child_row" slot-scope="props">
+            The link to {{props.row.title}} is <a :href="props.row.uri">{{props.row.url}}</a>
+        </div>
+    </v-client-table>
+</div>
+
+<p class="vue-pagination-ad"></p>

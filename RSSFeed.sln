@@ -3,15 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28010.2016
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RSSFeed.Console", "RSSFeed.Console\RSSFeed.Console.csproj", "{5452C72F-62DC-435A-94F9-1E410FFE23C5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RSSFeed.Data", "RSSFeed.Data\RSSFeed.Data.csproj", "{0D30986A-2ADB-47FF-AE9E-F284156EF253}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RSSFeed.Data", "RSSFeed.Data\RSSFeed.Data.csproj", "{0D30986A-2ADB-47FF-AE9E-F284156EF253}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RSSFeed.Service", "RSSFeed.Service\RSSFeed.Service.csproj", "{22A314A8-43C1-402C-A252-87E2C9658F54}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RSSFeed.Service", "RSSFeed.Service\RSSFeed.Service.csproj", "{22A314A8-43C1-402C-A252-87E2C9658F54}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RSSFeed.Web", "RSSFeed.Web\RSSFeed.Web.csproj", "{FCC6573E-07F4-406B-8979-687D4D4723B4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RSSFeed.Web", "RSSFeed.Web\RSSFeed.Web.csproj", "{FCC6573E-07F4-406B-8979-687D4D4723B4}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RSSFeed.Common", "RSSFeed.Common\RSSFeed.Common.csproj", "{A809A507-F245-4120-A8B6-0513EDA79A3A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RSSFeed.Common", "RSSFeed.Common\RSSFeed.Common.csproj", "{A809A507-F245-4120-A8B6-0513EDA79A3A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -19,10 +17,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{5452C72F-62DC-435A-94F9-1E410FFE23C5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{5452C72F-62DC-435A-94F9-1E410FFE23C5}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{5452C72F-62DC-435A-94F9-1E410FFE23C5}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{5452C72F-62DC-435A-94F9-1E410FFE23C5}.Release|Any CPU.Build.0 = Release|Any CPU
 		{0D30986A-2ADB-47FF-AE9E-F284156EF253}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{0D30986A-2ADB-47FF-AE9E-F284156EF253}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0D30986A-2ADB-47FF-AE9E-F284156EF253}.Release|Any CPU.ActiveCfg = Release|Any CPU

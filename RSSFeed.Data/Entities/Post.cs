@@ -14,12 +14,7 @@ namespace RSSFeed.Data.Entities
         public virtual Channel Channel { get; set; }
         public bool IsSeen { get; set; }
         public bool IsNew { get; set; }
-        public virtual ICollection<Category> Categories { get; set; }
+        public string CategoryName { get; set; }
         public string ImageUrl { get; set; }
-
-        public Post()
-        {
-            Categories = new List<Category>();
-        }
     }
 }

@@ -18,25 +18,45 @@ namespace RSSFeed.Web.Controllers
 {
     public class HomeController : BaseController
     {
-        public HomeController(IPostService postService, IChannelService channelService, IMapper mapper) 
-            : base(postService, channelService, mapper) { }
+        public HomeController(IPostService postService, IChannelService channelService, ICategoryService categoryService, IMapper mapper) 
+            : base(postService, channelService, categoryService, mapper) { }
 
         public IActionResult Index(string query)
         {
             ViewBag.SearchQuery = (query ?? "");
+            ViewBag.Sources = new SelectList(_channelService.GetChannels(), "Id", "Title");
+
             RecurringJob.AddOrUpdate(
                     () => RunInBackground(),
-                    Cron.MinuteInterval(1));
+                    Cron.MinuteInterval(5));
             return View();
         }
 
         // method to getting data to scrolling page
-        public async Task<JsonResult> GetData(int pageNumber, string query)
+        public async Task<JsonResult> GetData(int pageNumber, string query, string source, int sort, string category)
         {
             var pageSize = 40;
-            var postModels = await GetPosts(pageSize, pageNumber, query);
-
+            var postModels = await GetPosts(pageSize, pageNumber, sort, category, source, query);
+            
+            var exampleId = Guid.NewGuid();
+            if (Guid.TryParse(source, out exampleId) && category != "Все категории")
+            {
+                ViewBag.Sources = new SelectList(_channelService.GetChannels(), "Id", "Title", Guid.Parse(source));
+            }
+            else
+            {
+                ViewBag.Sources = new SelectList(_channelService.GetChannels(), "Id", "Title");
+            }
+            
             return Json(new { postModels.Data, total = postModels.RecordsTotal, filtered = postModels.RecordsFiltered });
+        }
+
+        public JsonResult GetCategoriesBySource(Guid sourceId)
+        {
+            var categories = new List<CategoryModel>();
+            categories = _categoryService.GetAllCategories(sourceId).ToList();
+            categories.Insert(0, (new CategoryModel { Name = "Все категории"}));
+            return Json(new SelectList(categories, "Name", "Name"));
         }
         
         public JsonResult PostSeen(string postId)
@@ -51,6 +71,12 @@ namespace RSSFeed.Web.Controllers
             // add channels, if not exist
             var channels = new List<ChannelModel>
             {
+                new ChannelModel
+                {
+                    Title = "K-News",
+                    Url = "https://knews.kg/feed/",
+                    Image = "https://knews.kg/wp-content/uploads/2016/02/logo.png"
+                },
                 new ChannelModel
                 {
                     Title = "Habr",
@@ -76,7 +102,7 @@ namespace RSSFeed.Web.Controllers
                     Image = "https://kaktus.media/lenta4/static/img/logo.png?2"
                 }
             };
-
+            
             foreach (var channel in channels)
             {
                 _channelService.AddChannel(channel);
@@ -86,11 +112,14 @@ namespace RSSFeed.Web.Controllers
             foreach (var channel in channelModels)
             {
                 var feedItems = _postService.FeedItems(channel);
-                foreach (var channelItem in feedItems)
+                foreach (KeyValuePair<PostModel, CategoryModel> keyValuePair in feedItems)
                 {
-                    channelItem.Title = Regex.Replace(channelItem.Title, @"<[^>]*(>|$)|&nbsp;|&zwnj;|&raquo;|&laquo;|&mdash;", " ").Trim();
-                    channelItem.Body = Regex.Replace(channelItem.Body, @"<[^>]*(>|$)|&nbsp;|&zwnj;|&raquo;|&laquo;|&mdash;", " ").Trim();
-                    _postService.AddPost(channelItem);
+                    keyValuePair.Key.Title = Regex.Replace(keyValuePair.Key.Title, @"<[^>]*(>|$)|&nbsp;|&zwnj;|&raquo;|&laquo;|&mdash;", " ").Trim();
+                    keyValuePair.Key.Body = Regex.Replace(keyValuePair.Key.Body, @"<[^>]*(>|$)|&nbsp;|&zwnj;|&raquo;|&laquo;|&mdash;", " ").Trim();
+                    //add post
+                    _postService.AddPost(keyValuePair.Key);
+                    //add category
+                    _categoryService.AddCategories(keyValuePair.Value, channel.Id);
                 }
             }
         }
@@ -108,28 +137,11 @@ namespace RSSFeed.Web.Controllers
 
             return View();
         }
-
-        public IActionResult Privacy()
-        {
-            return View();
-        }
-
+        
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
-        }
-
-        private void GetFreshPosts(IEnumerable<ChannelModel> channelModels)
-        {
-            foreach (var channel in channelModels)
-            {
-                var feedItems = _postService.FeedItems(channel);
-                foreach (var channelItem in feedItems)
-                {
-                    _postService.AddPost(channelItem);
-                }
-            }
         }
     }
 }

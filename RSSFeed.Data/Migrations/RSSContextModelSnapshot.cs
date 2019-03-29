@@ -28,11 +28,13 @@ namespace RSSFeed.Data.Migrations
 
                     b.Property<string>("Name");
 
-                    b.Property<Guid?>("PostId");
-
                     b.HasKey("Id");
 
-                    b.HasIndex("PostId");
+                    b.HasIndex("ChannelId");
+
+                    b.HasIndex("Name", "ChannelId")
+                        .IsUnique()
+                        .HasFilter("[Name] IS NOT NULL AND [ChannelId] IS NOT NULL");
 
                     b.ToTable("Categories");
                 });
@@ -62,6 +64,8 @@ namespace RSSFeed.Data.Migrations
 
                     b.Property<string>("Body");
 
+                    b.Property<string>("CategoryName");
+
                     b.Property<Guid?>("ChannelId");
 
                     b.Property<DateTime>("CreatedAt");
@@ -85,9 +89,9 @@ namespace RSSFeed.Data.Migrations
 
             modelBuilder.Entity("RSSFeed.Data.Entities.Category", b =>
                 {
-                    b.HasOne("RSSFeed.Data.Entities.Post", "Post")
+                    b.HasOne("RSSFeed.Data.Entities.Channel", "Channel")
                         .WithMany("Categories")
-                        .HasForeignKey("PostId");
+                        .HasForeignKey("ChannelId");
                 });
 
             modelBuilder.Entity("RSSFeed.Data.Entities.Post", b =>

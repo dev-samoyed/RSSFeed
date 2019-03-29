@@ -2,7 +2,7 @@
 // for details on configuring this project to bundle and minify static web assets.
 
 // Write your JavaScript code.
-
+Vue.use(GoTop);
 $(document).ready(function () {
     new Vue({
         el: '#posts',
@@ -15,6 +15,10 @@ $(document).ready(function () {
             page: 1,
             bottom: false,
             displayBlock: '',
+            source_selected: 'Все источники',
+            query: '',
+            sort_selected: 0,
+            category_selected: 'Все категории',
             items: []
         },
         methods: {
@@ -37,6 +41,15 @@ $(document).ready(function () {
             getQuery: function () {
                 return document.querySelector("input[name=query]").value;
             },
+            getSource: function () {
+                return document.getElementById("sources").value;
+            },
+            getSort: function () {
+                return document.getElementById("sort").value;
+            },
+            getCategory: function () {
+                return document.getElementById("categories").value;
+            },
             isLoading(state) {
                 return this.loader = state;
             },
@@ -51,13 +64,20 @@ $(document).ready(function () {
                 // without _this variable push method don't work
                 var _this = this;
                 this.isLoading(true);
-                axios.get(`/Home/GetData/?pageNumber=${this.page}&query=${this.getQuery()}`)
+                axios.get(`/Home/GetData/?pageNumber=${this.page}&query=${this.getQuery()}&source=${this.getSource()}&sort=${this.getSort()}&category=${this.getCategory()}`)
                     .then((response) => {
-                        console.log(response);
                         if (response.data.data.length > 0) {
                             this.notFound = false;
                             this.seen = true;
+
                             response.data.data.forEach(function (item) {
+                                if (item.imageUrl == "https://knews.kg/wp-content/uploads/2016/02/logo.png") {
+                                    item.imageClasses = "card-img-top image img-fluid img-thumbnail img-background";
+                                }
+                                else {
+                                    item.imageClasses = 'card-img-top image img-fluid img-thumbnail';
+                                }
+
                                 if (item.body.length > 170) {
                                     item.body = item.body.substring(0, 170) + "...";
                                 }
@@ -81,16 +101,50 @@ $(document).ready(function () {
             },
             postSeen(postId) {
                 var id = document.getElementById('postId').value;
-                axios.get(`/Home/PostSeen/?postId=${id}`)
-                    .then(function (response) {
-                        console.log(response);
-                    })
-                    .catch(function (error) {
-                        console.log(error);
-                    });
+                axios.get(`/Home/PostSeen/?postId=${id}`);
+            },
+            saveCategories() {
+                var categories = '';
+                var categoryList = $('#categories');
+                
+                axios.get(`/Home/GetCategoriesBySource/?sourceId=${this.getSource()}`)
+                    .then((response) => {
+                        response.data.forEach(function (item) {
+                            categories += `<option value="${item.value}">${item.value}</option>`;
+                        });
+                        this.category_selected = 'Все категории';
+                        categoryList.html(categories);
+                    },
+                        (error) => {
+                            this.posts = true;
+                            this.seen = false;
+                            this.notFound = true;
+                            this.isLoading(false);
+                        });
             }
         },
         watch: {
+            query: function () {
+                this.page = 1;
+                this.items.length = 0;
+                this.addPosts();
+            },
+            source_selected: function (val, oldval) {
+                this.page = 1;
+                this.saveCategories();
+                this.items.length = 0;
+                this.addPosts();
+            },
+            sort_selected: function () {
+                this.items.length = 0;
+                this.page = 1;
+                this.addPosts();
+            },
+            category_selected: function (val) {
+                this.page = 1;
+                this.items.length = 0;
+                this.addPosts();
+            },
             bottom(bottom) {
                 if (bottom) {
                     this.addPosts();
@@ -99,14 +153,10 @@ $(document).ready(function () {
         },
         mounted() {
             this.$nextTick(function () {
-                //window.addEventListener('resize', this.getWindowWidth);
-                //Init
                 this.getWindowWidth();
             });
-
         },
         created() {
-
             window.addEventListener('scroll', () => {
                 this.bottom = this.bottomVisible();
             });
