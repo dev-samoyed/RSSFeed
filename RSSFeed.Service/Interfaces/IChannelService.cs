@@ -14,5 +14,6 @@ namespace RSSFeed.Service.Interfaces
         IEnumerable<ChannelModel> GetChannels();
         void AddChannel(ChannelModel channel);
         ChannelModel GetById(Guid id);
+        void Delete(Guid id);
     }
 }

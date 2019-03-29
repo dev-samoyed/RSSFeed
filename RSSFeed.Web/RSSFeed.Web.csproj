@@ -2,9 +2,12 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
+    <TypeScriptToolsVersion>3.1</TypeScriptToolsVersion>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="FluentScheduler" Version="5.3.0" />
+    <PackageReference Include="Hangfire" Version="1.6.23" />
     <PackageReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="2.1.1" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.1.1" />
@@ -14,6 +17,10 @@
     <ProjectReference Include="..\RSSFeed.Common\RSSFeed.Common.csproj" />
     <ProjectReference Include="..\RSSFeed.Data\RSSFeed.Data.csproj" />
     <ProjectReference Include="..\RSSFeed.Service\RSSFeed.Service.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Areas\Admin\Data\" />
   </ItemGroup>
 
 </Project>

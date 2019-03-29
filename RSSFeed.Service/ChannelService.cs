@@ -35,9 +35,11 @@ namespace RSSFeed.Service
             _uow.SaveChanges();
         }
 
-        public override Task<QueryResponse<ChannelModel>> GetAsync(QueryRequest<PostSortType> query)
+        public void Delete(Guid id)
         {
-            throw new NotImplementedException();
+            var channel = _uow.GetRepository<Channel>().GetById(id);
+            _uow.GetRepository<Channel>().Delete(channel);
+            _uow.SaveChanges();
         }
 
         public ChannelModel GetById(Guid id)
@@ -52,14 +54,24 @@ namespace RSSFeed.Service
             return _mapper.Map<IEnumerable<ChannelModel>>(channels.OrderBy(title => title.Title));
         }
 
+        protected override IQueryable<Channel> Category(IQueryable<Channel> items, QuerySearch category)
+        {
+            return items;
+        }
+
         protected override IQueryable<Channel> Order(IQueryable<Channel> items, bool isFirst, QueryOrder<PostSortType> order)
         {
-            throw new NotImplementedException();
+            return items;
         }
 
         protected override IQueryable<Channel> Search(IQueryable<Channel> items, QuerySearch search)
         {
-            throw new NotImplementedException();
+            return items;
+        }
+
+        protected override IQueryable<Channel> SourceOrder(IQueryable<Channel> items, QuerySearch source)
+        {
+            return items;
         }
     }
 }

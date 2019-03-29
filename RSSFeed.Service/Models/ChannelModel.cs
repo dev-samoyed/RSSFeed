@@ -8,5 +8,6 @@ namespace RSSFeed.Service.Models
         public string Title { get; set; }
         public string Url { get; set; }
         public ChannelType ChannelType { get; set; }
+        public string Image { get; set; }
     }
 }

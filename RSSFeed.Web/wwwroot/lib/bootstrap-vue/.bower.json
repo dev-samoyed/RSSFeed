@@ -1,0 +1,14 @@
+{
+  "name": "bootstrap-vue",
+  "homepage": "https://github.com/bootstrap-vue/bootstrap-vue",
+  "version": "1.5.1",
+  "_release": "1.5.1",
+  "_resolution": {
+    "type": "version",
+    "tag": "v1.5.1",
+    "commit": "fa511e480cf08d8cfd888f72e9232053894bc720"
+  },
+  "_source": "https://github.com/bootstrap-vue/bootstrap-vue.git",
+  "_target": "*",
+  "_originalSource": "bootstrap-vue"
+}
