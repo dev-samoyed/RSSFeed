@@ -17,8 +17,12 @@ namespace RSSFeed.Data
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
+
             builder.Entity<Category>()
-            .HasIndex(p => new { p.Name, p.ChannelId }).IsUnique();
+                .HasIndex(c => new { c.Name, c.ChannelId }).IsUnique();
+
+            builder.Entity<Post>()
+                .HasIndex(p => new { p.Title, p.ChannelId }).IsUnique();
         }
     }
 }

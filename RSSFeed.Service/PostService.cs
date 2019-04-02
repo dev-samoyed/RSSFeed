@@ -25,23 +25,30 @@ namespace RSSFeed.Service
 
         public void AddPost(PostModel postModel)
         {
-            var post = _uow.GetRepository<Post>().All()
+            try
+            {
+                var post = _uow.GetRepository<Post>().All()
                         .FirstOrDefault(x => x.Title == postModel.Title && x.CreatedAt == postModel.CreatedAt);
 
-            if (post != null)
-            {
-                post.IsNew = false;
-                _uow.GetRepository<Post>().Update(post);
+                if (post != null)
+                {
+                    post.IsNew = false;
+                    _uow.GetRepository<Post>().Update(post);
+                    _uow.SaveChanges();
+                    return;
+                }
+
+                post = _mapper.Map<Post>(postModel);
+                post.Title = Regex.Replace(post.Title, @"<[^>]*(>|$)|&nbsp;|&zwnj;|&raquo;|&laquo;|&mdash;", " ").Trim();
+                post.Body = Regex.Replace(post.Body, @"<[^>]*(>|$)|&nbsp;|&zwnj;|&raquo;|&laquo;|&mdash;", " ").Trim();
+
+                _uow.GetRepository<Post>().Insert(post);
                 _uow.SaveChanges();
-                return;
             }
-            
-            post = _mapper.Map<Post>(postModel);
-            post.Title = Regex.Replace(post.Title, @"<[^>]*(>|$)|&nbsp;|&zwnj;|&raquo;|&laquo;|&mdash;", " ").Trim();
-            post.Body = Regex.Replace(post.Body, @"<[^>]*(>|$)|&nbsp;|&zwnj;|&raquo;|&laquo;|&mdash;", " ").Trim();
-            
-            _uow.GetRepository<Post>().Insert(post);
-            _uow.SaveChanges();
+             catch (DbUpdateException ex)
+            {
+                throw new DbUpdateException("Duplicate", ex.InnerException);
+            }
         }
         
         public async Task<PostModel> GetPostByIdAsync(Guid id)
