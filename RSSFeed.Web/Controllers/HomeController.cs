@@ -40,8 +40,7 @@ namespace RSSFeed.Web.Controllers
             var pageSize = 40;
             var postModels = await GetPosts(pageSize, pageNumber, sort, category, source, query);
             
-            var exampleId = Guid.NewGuid();
-            if (Guid.TryParse(source, out exampleId) && category != "Все категории")
+            if (Guid.TryParse(source, out Guid result) && category != "Все категории")
             {
                 ViewBag.Sources = new SelectList(_channelService.GetChannels(), "Id", "Title", Guid.Parse(source));
             }
@@ -52,7 +51,7 @@ namespace RSSFeed.Web.Controllers
             
             return Json(new { postModels.Data, total = postModels.RecordsTotal, filtered = postModels.RecordsFiltered });
         }
-
+        
         public JsonResult GetCategoriesBySource(Guid sourceId)
         {
             var categories = new List<CategoryModel>();
@@ -132,14 +131,7 @@ namespace RSSFeed.Web.Controllers
                 }
             }
         }
-
-        public IActionResult About()
-        {
-            ViewData["Message"] = "Your application description page.";
-
-            return View();
-        }
-
+        
         public IActionResult Contact()
         {
             ViewData["Message"] = "Your contact page.";

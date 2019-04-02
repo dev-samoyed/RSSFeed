@@ -151,8 +151,7 @@ namespace RSSFeed.Service
 
         protected override IQueryable<Post> SourceOrder(IQueryable<Post> items, QuerySearch source)
         {
-            var exampleId = Guid.NewGuid();
-            if(Guid.TryParse(source.Value, out exampleId))
+            if(Guid.TryParse(source.Value, out Guid result))
             {
                 var posts = items.Where(x => x.ChannelId == Guid.Parse(source.Value));
                 return posts;
