@@ -8,6 +8,8 @@ using AutoMapper;
 using Hangfire;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using RSSFeed.Service.Interfaces;
 using RSSFeed.Service.Models;
 using RSSFeed.Web.Controllers.Base;
@@ -116,10 +118,17 @@ namespace RSSFeed.Web.Controllers
                 {
                     keyValuePair.Key.Title = Regex.Replace(keyValuePair.Key.Title, @"<[^>]*(>|$)|&nbsp;|&zwnj;|&raquo;|&laquo;|&mdash;", " ").Trim();
                     keyValuePair.Key.Body = Regex.Replace(keyValuePair.Key.Body, @"<[^>]*(>|$)|&nbsp;|&zwnj;|&raquo;|&laquo;|&mdash;", " ").Trim();
-                    //add post
-                    _postService.AddPost(keyValuePair.Key);
-                    //add category
-                    _categoryService.AddCategories(keyValuePair.Value, channel.Id);
+                    try
+                    {
+                        //add post
+                        _postService.AddPost(keyValuePair.Key);
+                        //add category
+                        _categoryService.AddCategories(keyValuePair.Value, channel.Id);
+                    }
+                    catch (DbUpdateException ex)
+                    {
+                        continue;
+                    }
                 }
             }
         }

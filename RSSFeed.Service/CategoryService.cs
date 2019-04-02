@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using RSSFeed.Data.Entities;
 using RSSFeed.Data.Interfaces;
 using RSSFeed.Service.Enums;
@@ -23,24 +24,31 @@ namespace RSSFeed.Service
         {
             try
             {
-                if (categoryModel.Name.Any(char.IsLower) && categoryModel.Name.Any(char.IsUpper) && categoryModel.Name != null)
+                if(categoryModel.Name != null)
                 {
-                    var existingCategories = _uow.GetRepository<Category>().All()
-                                        .FirstOrDefault(x => x.Name == categoryModel.Name && x.ChannelId == channelId);
+                    if (categoryModel.Name.Any(char.IsLower) && categoryModel.Name.Any(char.IsUpper))
+                    {
+                        var existingCategory = GetCategory(categoryModel.Name, channelId);
 
-                    if (existingCategories != null)
-                        return;
-
-                    var category = _mapper.Map<Category>(categoryModel);
-                    _uow.GetRepository<Category>().Insert(category);
-                    _uow.SaveChanges();
+                        if (existingCategory == null)
+                        {
+                            var category = _mapper.Map<Category>(categoryModel);
+                            _uow.GetRepository<Category>().Insert(category);
+                            _uow.SaveChanges();
+                        }
+                    }
                 }
             }
-            catch (Exception)
+            catch (DbUpdateException ex)
             {
-                Console.WriteLine("Duplicate");
-                return;
+                throw new DbUpdateException("Duplicate", ex.InnerException);   
             }
+        }
+
+        protected Category GetCategory(string name, Guid id)
+        {
+            return _uow.GetRepository<Category>().All()
+                                        .SingleOrDefault(x => x.Name.ToLower().Trim() == name.ToLower().Trim() && x.ChannelId == id);
         }
 
         public IEnumerable<CategoryModel> GetAllCategories(Guid channelId)

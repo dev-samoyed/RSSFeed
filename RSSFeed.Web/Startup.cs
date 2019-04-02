@@ -13,6 +13,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using RSSFeed.Common;
 using RSSFeed.Web.Util;
+using Microsoft.Extensions.Logging;
 
 namespace RSSFeed.Web
 {
@@ -71,7 +72,7 @@ namespace RSSFeed.Web
                 app.UseExceptionHandler("/Home/Error");
                 app.UseHsts();
             }
-
+            
             app.UseHangfireServer();
             app.UseHangfireDashboard();
 
