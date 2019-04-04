@@ -2,7 +2,6 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using RSSFeed.Data;
@@ -10,16 +9,15 @@ using RSSFeed.Data;
 namespace RSSFeed.Data.Migrations
 {
     [DbContext(typeof(RSSContext))]
-    [Migration("20190326092103_EntitiesUpdate")]
-    partial class EntitiesUpdate
+    [Migration("20190404092619_InitialMigration")]
+    partial class InitialMigration
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("ProductVersion", "2.1.8-servicing-32085")
-                .HasAnnotation("Relational:MaxIdentifierLength", 128)
-                .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
             modelBuilder.Entity("RSSFeed.Data.Entities.Category", b =>
                 {
@@ -30,15 +28,12 @@ namespace RSSFeed.Data.Migrations
 
                     b.Property<string>("Name");
 
-                    b.Property<Guid?>("PostId");
-
                     b.HasKey("Id");
 
                     b.HasIndex("ChannelId");
 
-                    b.HasIndex("PostId")
-                        .IsUnique()
-                        .HasFilter("[PostId] IS NOT NULL");
+                    b.HasIndex("Name", "ChannelId")
+                        .IsUnique();
 
                     b.ToTable("Categories");
                 });
@@ -47,8 +42,6 @@ namespace RSSFeed.Data.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd();
-
-                    b.Property<int>("ChannelType");
 
                     b.Property<string>("Image");
 
@@ -68,9 +61,11 @@ namespace RSSFeed.Data.Migrations
 
                     b.Property<string>("Body");
 
+                    b.Property<string>("CategoryName");
+
                     b.Property<Guid?>("ChannelId");
 
-                    b.Property<DateTime>("CreatedAt");
+                    b.Property<DateTime?>("CreatedAt");
 
                     b.Property<string>("ImageUrl");
 
@@ -86,6 +81,9 @@ namespace RSSFeed.Data.Migrations
 
                     b.HasIndex("ChannelId");
 
+                    b.HasIndex("Title", "ChannelId")
+                        .IsUnique();
+
                     b.ToTable("Posts");
                 });
 
@@ -94,10 +92,6 @@ namespace RSSFeed.Data.Migrations
                     b.HasOne("RSSFeed.Data.Entities.Channel", "Channel")
                         .WithMany("Categories")
                         .HasForeignKey("ChannelId");
-
-                    b.HasOne("RSSFeed.Data.Entities.Post", "Post")
-                        .WithOne("Category")
-                        .HasForeignKey("RSSFeed.Data.Entities.Category", "PostId");
                 });
 
             modelBuilder.Entity("RSSFeed.Data.Entities.Post", b =>

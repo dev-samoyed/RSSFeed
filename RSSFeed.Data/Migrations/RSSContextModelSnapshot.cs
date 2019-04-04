@@ -2,7 +2,6 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using RSSFeed.Data;
 
@@ -16,8 +15,7 @@ namespace RSSFeed.Data.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("ProductVersion", "2.1.8-servicing-32085")
-                .HasAnnotation("Relational:MaxIdentifierLength", 128)
-                .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
             modelBuilder.Entity("RSSFeed.Data.Entities.Category", b =>
                 {
@@ -33,8 +31,7 @@ namespace RSSFeed.Data.Migrations
                     b.HasIndex("ChannelId");
 
                     b.HasIndex("Name", "ChannelId")
-                        .IsUnique()
-                        .HasFilter("[Name] IS NOT NULL AND [ChannelId] IS NOT NULL");
+                        .IsUnique();
 
                     b.ToTable("Categories");
                 });
@@ -43,8 +40,6 @@ namespace RSSFeed.Data.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd();
-
-                    b.Property<int>("ChannelType");
 
                     b.Property<string>("Image");
 
@@ -68,7 +63,7 @@ namespace RSSFeed.Data.Migrations
 
                     b.Property<Guid?>("ChannelId");
 
-                    b.Property<DateTime>("CreatedAt");
+                    b.Property<DateTime?>("CreatedAt");
 
                     b.Property<string>("ImageUrl");
 
@@ -85,8 +80,7 @@ namespace RSSFeed.Data.Migrations
                     b.HasIndex("ChannelId");
 
                     b.HasIndex("Title", "ChannelId")
-                        .IsUnique()
-                        .HasFilter("[Title] IS NOT NULL AND [ChannelId] IS NOT NULL");
+                        .IsUnique();
 
                     b.ToTable("Posts");
                 });
