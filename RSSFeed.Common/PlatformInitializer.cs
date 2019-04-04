@@ -40,7 +40,7 @@ namespace RSSFeed.Common
         protected virtual void ConfigureDatabase(IServiceCollection services)
         {
             services.AddDbContext<DbContext, RSSContext>(options =>
-               options.UseSqlServer(
+               options.UseMySql(
                    _configuration.GetConnectionString("DefaultConnection")));
         }
     }

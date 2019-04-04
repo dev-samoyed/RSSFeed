@@ -13,6 +13,7 @@ namespace RSSFeed.Data
         public RSSContext(DbContextOptions<RSSContext> options)
            : base(options)
         { }
+        
 
         protected override void OnModelCreating(ModelBuilder builder)
         {

@@ -1,19 +1,12 @@
-﻿using System;
-using Hangfire;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using FluentScheduler;
+﻿using Hangfire;
+using Hangfire.MySql.Core;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using RSSFeed.Common;
-using RSSFeed.Web.Util;
-using Microsoft.Extensions.Logging;
 
 namespace RSSFeed.Web
 {
@@ -46,11 +39,13 @@ namespace RSSFeed.Web
                 options.MinimumSameSitePolicy = SameSiteMode.None;
             });
 
-            services.AddHangfire(config =>
-            {
-                config.UseSqlServerStorage(connectionString);
-            });
-            
+            // add hangfire to mySQL
+            services.AddHangfire(
+                x => x.UseStorage(new MySqlStorage(connectionString, new MySqlStorageOptions()
+                {
+                    TablePrefix = "Custom"
+                })));
+
             services.AddMvc()
                 .SetCompatibilityVersion(CompatibilityVersion.Version_2_1)
                 .AddJsonOptions(options =>
@@ -72,14 +67,14 @@ namespace RSSFeed.Web
                 app.UseExceptionHandler("/Home/Error");
                 app.UseHsts();
             }
-            
+
             app.UseHangfireServer();
             app.UseHangfireDashboard();
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseCookiePolicy();
-            
+
             app.UseMvc(routes =>
             {
                 routes.MapRoute(
