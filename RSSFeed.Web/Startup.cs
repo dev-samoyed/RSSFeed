@@ -1,19 +1,12 @@
-﻿using System;
-using Hangfire;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using FluentScheduler;
+﻿using Hangfire;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using RSSFeed.Common;
 using RSSFeed.Web.Util;
-using Microsoft.Extensions.Logging;
 
 namespace RSSFeed.Web
 {
@@ -50,14 +43,21 @@ namespace RSSFeed.Web
             {
                 config.UseSqlServerStorage(connectionString);
             });
-            
+
+            // add signalr service
+            services.AddSignalR().AddHubOptions<NewsHub>(option =>
+            {
+                option.KeepAliveInterval = System.TimeSpan.FromMinutes(10);
+                option.HandshakeTimeout = System.TimeSpan.FromMinutes(10);
+            });
+
             services.AddMvc()
-                .SetCompatibilityVersion(CompatibilityVersion.Version_2_1)
-                .AddJsonOptions(options =>
-                    {
-                        options.SerializerSettings.ReferenceLoopHandling =
-                                                   Newtonsoft.Json.ReferenceLoopHandling.Ignore;
-                    });
+            .SetCompatibilityVersion(CompatibilityVersion.Version_2_1)
+            .AddJsonOptions(options =>
+                {
+                    options.SerializerSettings.ReferenceLoopHandling =
+                                               Newtonsoft.Json.ReferenceLoopHandling.Ignore;
+                });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -72,14 +72,17 @@ namespace RSSFeed.Web
                 app.UseExceptionHandler("/Home/Error");
                 app.UseHsts();
             }
-            
+
             app.UseHangfireServer();
             app.UseHangfireDashboard();
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseCookiePolicy();
-            
+            app.UseSignalR(routes =>
+            {
+                routes.MapHub<NewsHub>("/GetNews");
+            });
             app.UseMvc(routes =>
             {
                 routes.MapRoute(

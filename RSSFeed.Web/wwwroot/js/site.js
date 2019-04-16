@@ -78,8 +78,8 @@ $(document).ready(function () {
                                     item.imageClasses = 'card-img-top image img-fluid img-thumbnail';
                                 }
 
-                                if (item.body.length > 170) {
-                                    item.body = item.body.substring(0, 170) + "...";
+                                if (item.body.length > 150) {
+                                    item.body = item.body.substring(0, 150) + "...";
                                 }
                                 _this.items.push(item);
                             });

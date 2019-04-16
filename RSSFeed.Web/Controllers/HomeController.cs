@@ -8,6 +8,7 @@ using AutoMapper;
 using Hangfire;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using RSSFeed.Service.Interfaces;
@@ -20,8 +21,9 @@ namespace RSSFeed.Web.Controllers
 {
     public class HomeController : BaseController
     {
-        public HomeController(IPostService postService, IChannelService channelService, ICategoryService categoryService, IMapper mapper) 
-            : base(postService, channelService, categoryService, mapper) { }
+        protected readonly IHubContext<NewsHub> _hubContext;
+        public HomeController(IPostService postService, IChannelService channelService, ICategoryService categoryService, IMapper mapper, IHubContext<NewsHub> hubContext) 
+            : base(postService, channelService, categoryService, mapper) { _hubContext = hubContext; }
 
         public IActionResult Index(string query)
         {
@@ -131,6 +133,8 @@ namespace RSSFeed.Web.Controllers
                     }
                 }
             }
+
+            _hubContext.Clients.All.SendAsync("broadcastMessage", _postService.GetPosts().Where(x=>x.IsNew).Count());
         }
 
         public IActionResult About()

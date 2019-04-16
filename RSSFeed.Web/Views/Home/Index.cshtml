@@ -17,3 +17,22 @@
         <span class="vertical-align-span">Post not found</span>
     </div>
 </div>
+
+<script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+            
+            // Start the connection.
+            var connection = new signalR.HubConnectionBuilder()
+                                .withUrl('/GetNews')
+                                .build();
+            var news = 0;
+            connection.on('broadcastMessage', function (count) {
+                news = news + count;
+                document.title = `(${news}) NewsBlog`;
+                console.log(count);
+            });
+            connection.serverTimeoutInMilliseconds = 600000;
+            connection.start();
+
+        });
+</script>
