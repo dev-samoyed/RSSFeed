@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RSSFeed.Service.Enums;
 using RSSFeed.Service.Interfaces;
@@ -9,6 +10,7 @@ using System.Threading.Tasks;
 
 namespace RSSFeed.Web.Areas.Admin.Controllers
 {
+    [Authorize]
     public class ChannelsController : BaseController
     {
         public ChannelsController(IChannelService channelService, IMapper mapper) : base(channelService, mapper)

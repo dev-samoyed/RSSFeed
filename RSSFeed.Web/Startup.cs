@@ -2,10 +2,14 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using RSSFeed.Common;
+using RSSFeed.Web.Areas.Admin.Data;
+using RSSFeed.Web.Areas.Admin.Models;
 using RSSFeed.Web.Util;
 
 namespace RSSFeed.Web
@@ -44,6 +48,12 @@ namespace RSSFeed.Web
                 config.UseSqlServerStorage(connectionString);
             });
 
+            services.AddDbContext<ApplicationContext>(options =>
+                options.UseSqlServer(Configuration.GetConnectionString("IdentityConnection")));
+
+            services.AddIdentity<User, IdentityRole>()
+                .AddEntityFrameworkStores<ApplicationContext>();
+
             // add signalr service
             services.AddSignalR().AddHubOptions<NewsHub>(option =>
             {
@@ -79,6 +89,7 @@ namespace RSSFeed.Web
             app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseCookiePolicy();
+            app.UseAuthentication();
             app.UseSignalR(routes =>
             {
                 routes.MapHub<NewsHub>("/GetNews");
