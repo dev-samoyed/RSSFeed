@@ -2,7 +2,9 @@
 // for details on configuring this project to bundle and minify static web assets.
 
 // Write your JavaScript code.
+//import VueNotifications from '../lib/vue-notifications/dist/vue-notifications.es6';
 Vue.use(GoTop);
+//Vue.use(VueNotifications);
 $(document).ready(function () {
     new Vue({
         el: '#posts',
@@ -84,6 +86,7 @@ $(document).ready(function () {
                                 _this.items.push(item);
                             });
                             this.page++;
+                            $("#render").show();
                         }
                         if (response.data.filtered === 0 && response.data.total === 0) {
                             this.seen = false;
@@ -122,6 +125,7 @@ $(document).ready(function () {
                             this.isLoading(false);
                         });
             }
+            
         },
         watch: {
             query: function () {
@@ -154,9 +158,10 @@ $(document).ready(function () {
         mounted() {
             this.$nextTick(function () {
                 this.getWindowWidth();
-            });
+            });  
         },
         created() {
+            $("#render").hide();
             window.addEventListener('scroll', () => {
                 this.bottom = this.bottomVisible();
             });

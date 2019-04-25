@@ -73,39 +73,7 @@ namespace RSSFeed.Web.Controllers
         public void RunInBackground()
         {
             // add channels, if not exist
-            var channels = new List<ChannelModel>
-            {
-                new ChannelModel
-                {
-                    Title = "K-News",
-                    Url = "https://knews.kg/feed/",
-                    Image = "https://knews.kg/wp-content/uploads/2016/02/logo.png"
-                },
-                new ChannelModel
-                {
-                    Title = "Habr",
-                    Url = "http://habrahabr.ru/rss/",
-                    Image = "https://habr.com/images/habr.png"
-                },
-                new ChannelModel
-                {
-                    Title = "24kg",
-                    Url = "https://24.kg/rss/",
-                    Image = "https://24.kg/assets/42adfee/images/logo.png"
-                },
-                new ChannelModel
-                {
-                    Title = "Sputnik Бишкек",
-                    Url = "https://sputnik.kg/export/rss2/archive/index.xml",
-                    Image = "https://ru.sputnik.kg/i/logo.png"
-                },
-                new ChannelModel
-                {
-                    Title = "Kaktus Media",
-                    Url = "https://kaktus.media/?rss",
-                    Image = "https://kaktus.media/lenta4/static/img/logo.png?2"
-                }
-            };
+            var channels = GetChannels();
             
             foreach (var channel in channels)
             {
@@ -155,6 +123,43 @@ namespace RSSFeed.Web.Controllers
         public IActionResult Error()
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        }
+
+        private IList<ChannelModel> GetChannels()
+        {
+            return new List<ChannelModel>
+            {
+                new ChannelModel
+                {
+                    Title = "K-News",
+                    Url = "https://knews.kg/feed/",
+                    Image = "https://knews.kg/wp-content/uploads/2016/02/logo.png"
+                },
+                new ChannelModel
+                {
+                    Title = "Habr",
+                    Url = "http://habrahabr.ru/rss/",
+                    Image = "https://habr.com/images/habr.png"
+                },
+                new ChannelModel
+                {
+                    Title = "24kg",
+                    Url = "https://24.kg/rss/",
+                    Image = "https://24.kg/assets/42adfee/images/logo.png"
+                },
+                new ChannelModel
+                {
+                    Title = "Sputnik Бишкек",
+                    Url = "https://sputnik.kg/export/rss2/archive/index.xml",
+                    Image = "https://ru.sputnik.kg/i/logo.png"
+                },
+                new ChannelModel
+                {
+                    Title = "Kaktus Media",
+                    Url = "https://kaktus.media/?rss",
+                    Image = "https://kaktus.media/lenta4/static/img/logo.png?2"
+                }
+            };
         }
     }
 }
