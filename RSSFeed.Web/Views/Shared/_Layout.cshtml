@@ -54,8 +54,7 @@
             </div>
         </nav>
 
-        <div id="render" class="container body-content" v-if="posts">
-            <notifications group="foo" />
+        <div class="container body-content" v-if="posts">
             @RenderBody()
         </div>
         <div id="loader" class="loading" v-if="loader"></div>

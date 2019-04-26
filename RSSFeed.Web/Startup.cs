@@ -84,7 +84,7 @@ namespace RSSFeed.Web
             }
 
             app.UseHangfireServer();
-            app.UseHangfireDashboard();
+            app.UseHangfireDashboard("/jobs");
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();

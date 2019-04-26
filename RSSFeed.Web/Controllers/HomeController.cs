@@ -1,34 +1,33 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using AutoMapper;
+﻿using AutoMapper;
 using Hangfire;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using RSSFeed.Service.Interfaces;
 using RSSFeed.Service.Models;
 using RSSFeed.Web.Controllers.Base;
 using RSSFeed.Web.Models;
 using RSSFeed.Web.Util;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace RSSFeed.Web.Controllers
 {
     public class HomeController : BaseController
     {
         protected readonly IHubContext<NewsHub> _hubContext;
-        public HomeController(IPostService postService, IChannelService channelService, ICategoryService categoryService, IMapper mapper, IHubContext<NewsHub> hubContext) 
+        public HomeController(IPostService postService, IChannelService channelService, ICategoryService categoryService, IMapper mapper, IHubContext<NewsHub> hubContext)
             : base(postService, channelService, categoryService, mapper) { _hubContext = hubContext; }
 
-        public IActionResult Index(string query)
+        public async Task<IActionResult> Index(string query)
         {
             ViewBag.SearchQuery = (query ?? "");
-            ViewBag.Sources = new SelectList(_channelService.GetChannels(), "Id", "Title");
+            ViewBag.Sources = new SelectList(await _channelService.GetChannels(), "Id", "Title");
 
             RecurringJob.AddOrUpdate(
                     () => RunInBackground(),
@@ -41,49 +40,46 @@ namespace RSSFeed.Web.Controllers
         {
             var pageSize = 40;
             var postModels = await GetPosts(pageSize, pageNumber, sort, category, source, query);
-            
-            var exampleId = Guid.NewGuid();
-            if (Guid.TryParse(source, out exampleId) && category != "Все категории")
+
+            if (Guid.TryParse(source, out var sourceGuid) && category != "Все категории")
             {
-                ViewBag.Sources = new SelectList(_channelService.GetChannels(), "Id", "Title", Guid.Parse(source));
+                ViewBag.Sources = new SelectList(await _channelService.GetChannels(), "Id", "Title", sourceGuid);
             }
             else
             {
-                ViewBag.Sources = new SelectList(_channelService.GetChannels(), "Id", "Title");
+                ViewBag.Sources = new SelectList(await _channelService.GetChannels(), "Id", "Title");
             }
-            
+
             return Json(new { postModels.Data, total = postModels.RecordsTotal, filtered = postModels.RecordsFiltered });
         }
 
         public JsonResult GetCategoriesBySource(Guid sourceId)
         {
-            var categories = new List<CategoryModel>();
-            categories = _categoryService.GetAllCategories(sourceId).ToList();
-            categories.Insert(0, (new CategoryModel { Name = "Все категории"}));
+            var categories = _categoryService.GetAllCategories(sourceId).ToList();
+            categories.Insert(0, (new CategoryModel { Name = "Все категории" }));
             return Json(new SelectList(categories, "Name", "Name"));
         }
-        
+
         public JsonResult PostSeen(string postId)
         {
-            var id = Guid.Parse(postId);
-            _postService.PostSeen(id);
+            _postService.PostSeen(Guid.Parse(postId));
             return Json(new { data = "success" });
         }
 
-        public void RunInBackground()
+        public async Task RunInBackground()
         {
             // add channels, if not exist
             var channels = GetChannels();
-            
+
             foreach (var channel in channels)
             {
                 _channelService.AddChannel(channel);
             }
 
-            var channelModels = _channelService.GetChannels();
+            var channelModels = await _channelService.GetChannels();
             foreach (var channel in channelModels)
             {
-                var feedItems = _postService.FeedItems(channel);
+                var feedItems = await _postService.FeedItems(channel);
                 foreach (KeyValuePair<PostModel, CategoryModel> keyValuePair in feedItems)
                 {
                     keyValuePair.Key.Title = Regex.Replace(keyValuePair.Key.Title, @"<[^>]*(>|$)|&nbsp;|&zwnj;|&raquo;|&laquo;|&mdash;", " ").Trim();
@@ -95,14 +91,14 @@ namespace RSSFeed.Web.Controllers
                         //add category
                         _categoryService.AddCategories(keyValuePair.Value, channel.Id);
                     }
-                    catch (DbUpdateException ex)
+                    catch (DbUpdateException)
                     {
                         continue;
                     }
                 }
             }
 
-            _hubContext.Clients.All.SendAsync("broadcastMessage", _postService.GetPosts().Where(x=>x.IsNew).Count());
+            await _hubContext.Clients.All.SendAsync("broadcastMessage", _postService.GetPosts().Where(x => x.IsNew).Count());
         }
 
         public IActionResult About()
@@ -118,7 +114,7 @@ namespace RSSFeed.Web.Controllers
 
             return View();
         }
-        
+
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {

@@ -80,13 +80,12 @@ $(document).ready(function () {
                                     item.imageClasses = 'card-img-top image img-fluid img-thumbnail';
                                 }
 
-                                if (item.body.length > 150) {
-                                    item.body = item.body.substring(0, 150) + "...";
+                                if (item.body.length > 100) {
+                                    item.body = item.body.substring(0, 100) + "...";
                                 }
                                 _this.items.push(item);
                             });
                             this.page++;
-                            $("#render").show();
                         }
                         if (response.data.filtered === 0 && response.data.total === 0) {
                             this.seen = false;
@@ -161,7 +160,6 @@ $(document).ready(function () {
             });  
         },
         created() {
-            $("#render").hide();
             window.addEventListener('scroll', () => {
                 this.bottom = this.bottomVisible();
             });

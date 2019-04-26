@@ -11,7 +11,7 @@ namespace RSSFeed.Service.Interfaces
 {
     public interface IChannelService : IBaseQueryService<Channel, ChannelModel, PostSortType>
     {
-        IEnumerable<ChannelModel> GetChannels();
+        Task<IEnumerable<ChannelModel>> GetChannels();
         void AddChannel(ChannelModel channel);
         ChannelModel GetById(Guid id);
         void Delete(Guid id);

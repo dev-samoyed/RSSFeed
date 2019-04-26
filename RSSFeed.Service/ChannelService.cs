@@ -48,10 +48,10 @@ namespace RSSFeed.Service
             return _mapper.Map<ChannelModel>(channel);
         }
 
-        public IEnumerable<ChannelModel> GetChannels()
+        public Task<IEnumerable<ChannelModel>> GetChannels()
         {
             var channels = _uow.GetRepository<Channel>().All();
-            return _mapper.Map<IEnumerable<ChannelModel>>(channels.OrderBy(title => title.Title));
+            return _mapper.Map<Task<IEnumerable<ChannelModel>>>(channels.OrderBy(title => title.Title));
         }
 
         protected override IQueryable<Channel> Category(IQueryable<Channel> items, QuerySearch category)

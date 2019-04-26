@@ -60,20 +60,20 @@ namespace RSSFeed.Service
             return _mapper.Map<PostModel>(post);
         }
 
-        public async Task<IEnumerable<PostModel>> GetPosts(Guid channelId)
+        public IEnumerable<PostModel> GetPosts(Guid channelId)
         {
             var posts = _uow.GetRepository<Post>().All().Include(x => x.Channel)
                                         .Where(x => x.ChannelId == channelId);
             return _mapper.Map<IEnumerable<PostModel>>(posts.OrderByDescending(post => post.CreatedAt));
         }
 
-        public IDictionary<PostModel, CategoryModel> FeedItems(ChannelModel channel)
+        public async Task<IDictionary<PostModel, CategoryModel>> FeedItems(ChannelModel channel)
         {
             var items = new Dictionary<PostModel, CategoryModel>();
-            var readerTask = FeedReader.ReadAsync(channel.Url);
-            readerTask.ConfigureAwait(false);
+            var readerTask = await FeedReader.ReadAsync(channel.Url);
+            //readerTask.ConfigureAwait(false);
 
-            foreach (var item in readerTask.Result.Items)
+            foreach (var item in readerTask.Items)
             {
                 var image = item.SpecificItem.Element.Descendants().ToList();
 
@@ -151,13 +151,11 @@ namespace RSSFeed.Service
 
         protected override IQueryable<Post> SourceOrder(IQueryable<Post> items, QuerySearch source)
         {
-            var exampleId = Guid.NewGuid();
-            if(Guid.TryParse(source.Value, out exampleId))
+            if(Guid.TryParse(source.Value, out Guid sourceId))
             {
-                var posts = items.Where(x => x.ChannelId == Guid.Parse(source.Value));
+                var posts = items.Where(x => x.ChannelId == sourceId);
                 return posts;
             }
-                
 
             return items;
         }
