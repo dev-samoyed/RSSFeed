@@ -12,7 +12,6 @@ $(document).ready(function () {
             columns: ['title'],
             data: [],
             options: {
-                
                 sortable: ['title'],
                 filterable: ['title']
             }
@@ -25,8 +24,9 @@ $(document).ready(function () {
                 } else {
                     this.message = '';
                     axios.get(`/Admin/Channels/Create/?imageUrl=${this.imageUrl}&&title=${this.title}&&url=${this.url}`)
-                        .then((response) => {
-                            console.log(response);
+                        .then(() => {
+                            alert("Канал сохранен");
+                            this.createChannel = false;
                         });
                 }   
             },

@@ -44,14 +44,21 @@ namespace RSSFeed.Web.Areas.Admin.Controllers
         
         public JsonResult Create(string imageUrl, string title, string url)
         {
-            var channel = new ChannelModel()
+            try
             {
-                Image = imageUrl,
-                Url = url,
-                Title = title
-            };
-            _channelService.AddChannel(channel);
-            return Json(new { data = "success" });
+                var channel = new ChannelModel()
+                {
+                    Image = imageUrl,
+                    Url = url,
+                    Title = title
+                };
+                _channelService.AddChannel(channel);
+                return Json(new { data = "success" });
+            }
+            catch (Exception)
+            {
+                return Json(new { data = "failed" });
+            }
         }
 
         public JsonResult Delete(string id)
