@@ -10,17 +10,13 @@
     <PackageReference Include="Hangfire" Version="1.6.23" />
     <PackageReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="2.1.1" />
-    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.1.1" />
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.1.9" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\RSSFeed.Common\RSSFeed.Common.csproj" />
     <ProjectReference Include="..\RSSFeed.Data\RSSFeed.Data.csproj" />
     <ProjectReference Include="..\RSSFeed.Service\RSSFeed.Service.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Areas\Admin\Data\" />
   </ItemGroup>
 
 </Project>

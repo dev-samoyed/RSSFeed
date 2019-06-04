@@ -31,7 +31,22 @@
                     <li class="nav-item pr-2">
                         <a class="btn btn-info" href="/Home">На главную</a>
                     </li>
+
                 </ul>
+
+                @if (User.Identity.IsAuthenticated)
+                {
+                    <p>@User.Identity.Name</p>
+
+                    <form method="post" asp-area="Admin" asp-controller="Account" asp-action="LogOff">
+                        <input type="submit" value="Выход" />
+                    </form>
+                }
+                else
+                {
+                    <a asp-area="Admin" asp-controller="Account" asp-action="Login">Вход</a>
+                    <a asp-area="Admin" asp-controller="Account" asp-action="Register">Регистрация</a>
+                }
             </div>
         </div>
     </nav>

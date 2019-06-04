@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RSSFeed.Service.Enums;
 using RSSFeed.Service.Interfaces;
@@ -9,6 +10,7 @@ using System.Threading.Tasks;
 
 namespace RSSFeed.Web.Areas.Admin.Controllers
 {
+    [Authorize]
     public class ChannelsController : BaseController
     {
         public ChannelsController(IChannelService channelService, IMapper mapper) : base(channelService, mapper)
@@ -42,14 +44,21 @@ namespace RSSFeed.Web.Areas.Admin.Controllers
         
         public JsonResult Create(string imageUrl, string title, string url)
         {
-            var channel = new ChannelModel()
+            try
             {
-                Image = imageUrl,
-                Url = url,
-                Title = title
-            };
-            _channelService.AddChannel(channel);
-            return Json(new { data = "success" });
+                var channel = new ChannelModel()
+                {
+                    Image = imageUrl,
+                    Url = url,
+                    Title = title
+                };
+                _channelService.AddChannel(channel);
+                return Json(new { data = "success" });
+            }
+            catch (Exception)
+            {
+                return Json(new { data = "failed" });
+            }
         }
 
         public JsonResult Delete(string id)
