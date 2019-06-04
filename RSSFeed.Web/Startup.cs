@@ -1,19 +1,16 @@
-﻿using System;
-using Hangfire;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using FluentScheduler;
+﻿using Hangfire;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.HttpsPolicy;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using RSSFeed.Common;
+using RSSFeed.Web.Areas.Admin.Data;
+using RSSFeed.Web.Areas.Admin.Models;
 using RSSFeed.Web.Util;
-using Microsoft.Extensions.Logging;
 
 namespace RSSFeed.Web
 {
@@ -50,14 +47,27 @@ namespace RSSFeed.Web
             {
                 config.UseSqlServerStorage(connectionString);
             });
-            
+
+            services.AddDbContext<ApplicationContext>(options =>
+                options.UseSqlServer(Configuration.GetConnectionString("IdentityConnection")));
+
+            services.AddIdentity<User, IdentityRole>()
+                .AddEntityFrameworkStores<ApplicationContext>();
+
+            // add signalr service
+            services.AddSignalR().AddHubOptions<NewsHub>(option =>
+            {
+                option.KeepAliveInterval = System.TimeSpan.FromMinutes(10);
+                option.HandshakeTimeout = System.TimeSpan.FromMinutes(10);
+            });
+
             services.AddMvc()
-                .SetCompatibilityVersion(CompatibilityVersion.Version_2_1)
-                .AddJsonOptions(options =>
-                    {
-                        options.SerializerSettings.ReferenceLoopHandling =
-                                                   Newtonsoft.Json.ReferenceLoopHandling.Ignore;
-                    });
+            .SetCompatibilityVersion(CompatibilityVersion.Version_2_1)
+            .AddJsonOptions(options =>
+                {
+                    options.SerializerSettings.ReferenceLoopHandling =
+                                               Newtonsoft.Json.ReferenceLoopHandling.Ignore;
+                });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -72,14 +82,18 @@ namespace RSSFeed.Web
                 app.UseExceptionHandler("/Home/Error");
                 app.UseHsts();
             }
-            
+
             app.UseHangfireServer();
-            app.UseHangfireDashboard();
+            app.UseHangfireDashboard("/jobs");
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseCookiePolicy();
-            
+            app.UseAuthentication();
+            app.UseSignalR(routes =>
+            {
+                routes.MapHub<NewsHub>("/GetNews");
+            });
             app.UseMvc(routes =>
             {
                 routes.MapRoute(
