@@ -28,7 +28,7 @@ namespace RSSFeed.Service
             try
             {
                 var post = _uow.GetRepository<Post>().All()
-                        .FirstOrDefault(x => x.Title == postModel.Title && x.CreatedAt == postModel.CreatedAt);
+                        .FirstOrDefault(x => x.Title == postModel.Title && x.PostUrl == postModel.PostUrl);
 
                 if (post != null)
                 {
@@ -82,13 +82,15 @@ namespace RSSFeed.Service
                     Channel = channel,
                     ChannelId = channel.Id,
                     Title = item.Title,
-                    CreatedAt = item.PublishingDate.Value,
+                    CreatedAt = item.PublishingDate ?? DateTime.Now,
                     IsSeen = false,
                     IsNew = true,
                     PostUrl = item.Link,
                     Body = item.Description,
                     ImageUrl = image.FirstOrDefault(x => x.Name.LocalName.Contains("enclosure")) != null
-                                ? item.SpecificItem.Element.Descendants().First(x => x.Name.LocalName == "enclosure").Attribute("url").Value
+                                ? item.SpecificItem.Element.Descendants()
+                                    .First(x => x.Name.LocalName == "enclosure").Attribute("url")
+                                    ?.Value
                                 : channel.Image,
                     CategoryName = item.Categories.FirstOrDefault()
                 };
@@ -101,6 +103,7 @@ namespace RSSFeed.Service
                 {
                     categoryModel.Name = item.Categories.FirstOrDefault();
                     categoryModel.ChannelId = channel.Id;
+                    categoryModel.Channel = channel;
                 }
 
                 items.Add(channelItem, categoryModel);
@@ -124,7 +127,7 @@ namespace RSSFeed.Service
 
         protected override IQueryable<Post> Paging(IQueryable<Post> items, int? start, int? length)
         {
-            return items.Skip(start.Value).Take(length.Value);
+            return items.Skip(start ?? 0).Take(length ?? 0);
         }
 
         protected override IQueryable<Post> Search(IQueryable<Post> items, QuerySearch search)
@@ -177,5 +180,29 @@ namespace RSSFeed.Service
             return _mapper.Map<IEnumerable<PostModel>>(posts.OrderByDescending(post => post.CreatedAt));
         }
 
+        public IEnumerable<PostModel> GetFinancialPosts()
+        {
+            var posts = _uow.GetRepository<Post>()
+                .All()
+                .Include(x => x.Channel)
+                .Where(post => post.IsNew && (post.CategoryName.ToLower().Contains("экономика") || 
+                                              post.CategoryName.ToLower().Contains("финансы") ||
+                                              post.CategoryName.ToLower().Contains("валюта") ||
+                                              post.CategoryName.ToLower().Contains("бизнес") ||
+                                              post.CategoryName.ToLower().Contains("налоги")));
+
+            return _mapper.Map<IEnumerable<PostModel>>(posts.OrderByDescending(post => post.CreatedAt));
+        }
+
+        public void SetPostIsNotNewYet(Guid postId)
+        {
+            var post = _uow.GetRepository<Post>().All().FirstOrDefault(p => p.Id == postId);
+            if(post==null)
+                return;
+
+            post.IsNew = false;
+            _uow.GetRepository<Post>().Update(post);
+            _uow.SaveChanges();
+        }
     }
 }

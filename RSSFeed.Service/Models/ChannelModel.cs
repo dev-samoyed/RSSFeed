@@ -1,4 +1,5 @@
-﻿using RSSFeed.Data.Enums;
+﻿using System.Collections.Generic;
+using RSSFeed.Data.Enums;
 using RSSFeed.Service.Models.Base;
 
 namespace RSSFeed.Service.Models

@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28010.2016
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31005.135
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RSSFeed.Data", "RSSFeed.Data\RSSFeed.Data.csproj", "{0D30986A-2ADB-47FF-AE9E-F284156EF253}"
 EndProject
@@ -10,6 +10,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RSSFeed.Web", "RSSFeed.Web\RSSFeed.Web.csproj", "{FCC6573E-07F4-406B-8979-687D4D4723B4}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RSSFeed.Common", "RSSFeed.Common\RSSFeed.Common.csproj", "{A809A507-F245-4120-A8B6-0513EDA79A3A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RSSFeed.Api", "RSSFeed.Api\RSSFeed.Api.csproj", "{4218A078-C019-4B61-A258-E0E68DA1582E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{A809A507-F245-4120-A8B6-0513EDA79A3A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A809A507-F245-4120-A8B6-0513EDA79A3A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A809A507-F245-4120-A8B6-0513EDA79A3A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4218A078-C019-4B61-A258-E0E68DA1582E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4218A078-C019-4B61-A258-E0E68DA1582E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4218A078-C019-4B61-A258-E0E68DA1582E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4218A078-C019-4B61-A258-E0E68DA1582E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

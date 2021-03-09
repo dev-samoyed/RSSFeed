@@ -13,8 +13,16 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
+using Refit;
+using RSSFeed.Web.Util.ApiClient;
 
 namespace RSSFeed.Web.Controllers
 {
@@ -24,14 +32,18 @@ namespace RSSFeed.Web.Controllers
         public HomeController(IPostService postService, IChannelService channelService, ICategoryService categoryService, IMapper mapper, IHubContext<NewsHub> hubContext)
             : base(postService, channelService, categoryService, mapper) { _hubContext = hubContext; }
 
-        public async Task<IActionResult> Index(string query)
+        public IActionResult Index(string query)
         {
             ViewBag.SearchQuery = (query ?? "");
-            ViewBag.Sources = new SelectList(await _channelService.GetChannels(), "Id", "Title");
+            var channels = _channelService.GetChannels();
+            ViewBag.Sources = channels.Count() > 0 
+                ? new SelectList(channels, "Id", "Title")
+                : new SelectList(new List<ChannelModel>());
 
             RecurringJob.AddOrUpdate(
-                    () => RunInBackground(),
-                    Cron.MinuteInterval(5));
+                () => RunInBackground(),
+                Cron.Hourly);
+            
             return View();
         }
 
@@ -43,11 +55,11 @@ namespace RSSFeed.Web.Controllers
             
             if (Guid.TryParse(source, out var sourceGuid) && category != "Все категории")
             {
-                ViewBag.Sources = new SelectList(await _channelService.GetChannels(), "Id", "Title", sourceGuid);
+                ViewBag.Sources = new SelectList(_channelService.GetChannels(), "Id", "Title", sourceGuid);
             }
             else
             {
-                ViewBag.Sources = new SelectList(await _channelService.GetChannels(), "Id", "Title");
+                ViewBag.Sources = new SelectList(_channelService.GetChannels(), "Id", "Title");
             }
 
             return Json(new { postModels.Data, total = postModels.RecordsTotal, filtered = postModels.RecordsFiltered });
@@ -66,6 +78,32 @@ namespace RSSFeed.Web.Controllers
             return Json(new { data = "success" });
         }
 
+        public async Task SendToApi()
+        {
+            using (var httpClient = new HttpClient())
+            {
+                httpClient.BaseAddress = new Uri("https://fin.kg/api/create_article");
+                httpClient.DefaultRequestHeaders.Accept.Clear();
+                httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                
+                var serializerSettings = new JsonSerializerSettings();
+                serializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
+                var posts = _postService.GetFinancialPosts().ToList();
+
+                foreach (var post in posts)
+                {
+                    var postList = new List<PostModel>();
+                    postList.Add(post);
+                    var jsonData = JsonConvert.SerializeObject(postList, serializerSettings);
+                
+                    var httpContent = new StringContent(jsonData, Encoding.UTF8, "application/json");
+                    await httpClient.PostAsync(httpClient.BaseAddress, httpContent);
+                    post.IsNew = false;
+                    _postService.SetPostIsNotNewYet(post.Id);
+                    Thread.Sleep(1000);
+                }
+            }
+        }
         public async Task RunInBackground()
         {
             // add channels, if not exist
@@ -76,8 +114,8 @@ namespace RSSFeed.Web.Controllers
                 _channelService.AddChannel(channel);
             }
 
-            var channelModels = await _channelService.GetChannels();
-            foreach (var channel in channelModels)
+            var channelModels = _channelService.GetChannels();
+            foreach (var channel in channelModels.ToList())
             {
                 var feedItems = await _postService.FeedItems(channel);
                 foreach (KeyValuePair<PostModel, CategoryModel> keyValuePair in feedItems)
@@ -97,8 +135,9 @@ namespace RSSFeed.Web.Controllers
                     }
                 }
             }
-
-            await _hubContext.Clients.All.SendAsync("broadcastMessage", _postService.GetPosts().Where(x => x.IsNew).Count());
+            await SendToApi();
+            await _hubContext.Clients.All.SendAsync("broadcastMessage",
+                _postService.GetPosts().Count(x => x.IsNew));
         }
         
         public IActionResult Contact()
@@ -128,7 +167,7 @@ namespace RSSFeed.Web.Controllers
                 {
                     Title = "Habr",
                     Url = "http://habrahabr.ru/rss/",
-                    Image = "https://habr.com/images/habr.png"
+                    Image = "https://hsto.org/storage/stuff/habr/habr_ru.png"
                 },
                 new ChannelModel
                 {
@@ -136,10 +175,16 @@ namespace RSSFeed.Web.Controllers
                     Url = "https://24.kg/rss/",
                     Image = "https://24.kg/assets/42adfee/images/logo.png"
                 },
+                //new ChannelModel
+                //{
+                //    Title = "Sputnik Бишкек",
+                //    Url = "https://sputnik.kg/export/rss2/archive/index.xml",
+                //    Image = "https://ru.sputnik.kg/i/logo.png"
+                //},
                 new ChannelModel
                 {
-                    Title = "Sputnik Бишкек",
-                    Url = "https://sputnik.kg/export/rss2/archive/index.xml",
+                    Title = "Ru Sputnik Бишкек",
+                    Url = "https://ru.sputnik.kg/export/rss2/archive/index.xml",
                     Image = "https://ru.sputnik.kg/i/logo.png"
                 },
                 new ChannelModel
@@ -147,7 +192,25 @@ namespace RSSFeed.Web.Controllers
                     Title = "Kaktus Media",
                     Url = "https://kaktus.media/?rss",
                     Image = "https://kaktus.media/lenta4/static/img/logo.png?2"
-                }
+                },
+                new ChannelModel
+                {
+                    Title = "Kloop Ru",
+                    Url = "https://kloop.kg/feed/",
+                    Image = "https://kloop.kg/wp-content/uploads/2017/01/kloop_transparent_site.png"
+                },
+                //new ChannelModel
+                //{
+                //    Title = "Kloop Kg",
+                //    Url = "https://ky.kloop.asia/feed/",
+                //    Image = "https://kloop.kg/wp-content/uploads/2017/01/kloop_transparent_site.png"
+                //},
+                //new ChannelModel
+                //{
+                //    Title = "Azattyk Экономика",
+                //    Url = "https://www.azattyk.org/api/zyooqeqgoo",
+                //    Image = "https://www.azattyk.org/Content/responsive/RFE/ky-KG/img/logo-compact.svg"
+                //}
             };
         }
     }

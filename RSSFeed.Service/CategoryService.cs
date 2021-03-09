@@ -26,16 +26,13 @@ namespace RSSFeed.Service
             {
                 if(categoryModel.Name != null)
                 {
-                    if (categoryModel.Name.Any(char.IsLower) && categoryModel.Name.Any(char.IsUpper))
-                    {
-                        var existingCategory = GetCategory(categoryModel.Name, channelId);
+                    var existingCategory = GetCategory(categoryModel.Name, channelId);
 
-                        if (existingCategory == null)
-                        {
-                            var category = _mapper.Map<Category>(categoryModel);
-                            _uow.GetRepository<Category>().Insert(category);
-                            _uow.SaveChanges();
-                        }
+                    if (existingCategory == null)
+                    {
+                        var category = _mapper.Map<Category>(categoryModel);
+                        _uow.GetRepository<Category>().Insert(category);
+                        _uow.SaveChanges();
                     }
                 }
             }
@@ -48,7 +45,7 @@ namespace RSSFeed.Service
         protected Category GetCategory(string name, Guid id)
         {
             return _uow.GetRepository<Category>().All()
-                                        .SingleOrDefault(x => x.Name.ToLower().Trim() == name.ToLower().Trim() && x.ChannelId == id);
+                                        .FirstOrDefault(x => x.Name.ToLower().Trim() == name.ToLower().Trim() && x.ChannelId == id);
         }
 
         public IEnumerable<CategoryModel> GetAllCategories(Guid channelId)

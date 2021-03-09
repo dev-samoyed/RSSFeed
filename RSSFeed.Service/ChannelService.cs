@@ -23,7 +23,7 @@ namespace RSSFeed.Service
         public void AddChannel(ChannelModel channelModel)
         {
             var channel = _uow.GetRepository<Channel>().All()
-                        .FirstOrDefault(x => x.Title == channelModel.Title && x.Url == channelModel.Url);
+                        .FirstOrDefault(x => x.Title == channelModel.Title);
 
             if (channel != null)
                 return;
@@ -48,10 +48,17 @@ namespace RSSFeed.Service
             return _mapper.Map<ChannelModel>(channel);
         }
 
-        public Task<IEnumerable<ChannelModel>> GetChannels()
+        public List<ChannelModel> GetChannels()
         {
-            var channels = _uow.GetRepository<Channel>().All();
-            return _mapper.Map<Task<IEnumerable<ChannelModel>>>(channels.OrderBy(title => title.Title));
+            var channels = _uow.GetRepository<Channel>().All().ToList();
+            if (channels.Count() == 0)
+            {
+                var list = new List<ChannelModel>();
+                return list;
+            }
+
+            return _mapper.Map<List<ChannelModel>>(channels.OrderBy(title => title.Title))
+                .ToList();
         }
 
         protected override IQueryable<Channel> Category(IQueryable<Channel> items, QuerySearch category)

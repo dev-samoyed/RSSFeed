@@ -1,4 +1,5 @@
-﻿using Hangfire;
+﻿using System;
+using Hangfire;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -11,6 +12,7 @@ using RSSFeed.Common;
 using RSSFeed.Web.Areas.Admin.Data;
 using RSSFeed.Web.Areas.Admin.Models;
 using RSSFeed.Web.Util;
+using RSSFeed.Web.Util.ApiClient;
 
 namespace RSSFeed.Web
 {
